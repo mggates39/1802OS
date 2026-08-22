@@ -1,0 +1,66 @@
+; includes for testing compilation
+;.include macros.a18
+;.include definitions.a18
+; denote startup
+INITSYSTEM:
+SEQ
+
+; clear user ram
+.if SKIPMEMORY = 0
+LDI >ENDROM ; >ENDROM
+PHI_R USERREG0
+; clear RAM as C4 (nop) loop
+LDI <ENDROM
+PLO_R USERREG0
+CLEARRAMLOOP:
+LDI 0x00
+STR_R USERREG0
+INC_R USERREG0
+GLO_R USERREG0
+BNZ CLEARRAMLOOP
+GHI_R USERREG0
+BNZ CLEARRAMLOOP
+.endif
+; done clearing USERRAM
+
+WARMBOOT:
+; Clear registers 1-15
+; R(0) is PC - don't touch
+REGCOUNTER equ 1
+.REPT 15
+CLEARREG REGCOUNTER
+REGCOUNTER .set (REGCOUNTER + 1)
+.endm
+
+; setup stack location
+LOADREG STACKTOP, STACK
+SEX_R STACK
+
+;setup GOSUB and RETSUB
+LOADREG CALL, GOSUBREG
+
+;setup GOSUB Return Stack
+LOADREG RETURNSTACKTOP, RETURNSTACK
+
+;setup Interrupt Handler Pointer
+LOADREG INTERRUPTHANDLER, INTERRUPT
+
+
+
+; clear OSMEM 16 bytes
+; clear ram at 8000h - FFFFh
+
+LOADREG OSMEM+1, USERREG1
+LDI 0x1F
+PLO_R USERREG0
+OSMEMINIT:
+LDI 0x00
+STR_R USERREG1
+INC_R USERREG1
+DEC_R USERREG0
+GLO_R USERREG0
+BNZ OSMEMINIT
+
+; clear Q when startup done
+REQ
+

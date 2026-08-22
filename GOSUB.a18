@@ -1,0 +1,108 @@
+; GOSUB and RETSUB
+; makes possible subroutine calling 
+;
+; example call to subroutine with immediate argument
+;LDI 0x11
+;GOSUB sub1
+;.cstr "Hello"
+
+;example subroutine which consumes arguments
+;sub1:
+;SEX_R ARGUMENTS
+;GETARG:
+;LDXA 
+;BNZ GETARG
+;SEX_R STACK
+;RETSUB
+
+;example subroutine which consumes stack argument
+;sub2:
+;INC STACK ; get to valid data 
+;LDX ; leave stack pointing at "free" byte
+;RETSUB
+
+CALL:
+GLO_R ARGUMENTS ; save previous location
+STR_R RETURNSTACK
+DEC_R RETURNSTACK
+GHI_R ARGUMENTS
+STR_R RETURNSTACK
+DEC_R RETURNSTACK
+GLO_R PC
+PLO_R ARGUMENTS ; store new calling location as arguments
+GHI_R PC
+PHI_R ARGUMENTS
+LDA_R ARGUMENTS
+PHI_R PC
+LDA_R ARGUMENTS
+PLO_R PC
+SEP_R PC
+
+RETURN:
+GHI_R ARGUMENTS
+PHI_R PC
+GLO_R ARGUMENTS
+PLO_R PC
+INC_R RETURNSTACK
+LDA_R RETURNSTACK
+PHI_R ARGUMENTS
+LDN_R RETURNSTACK
+PLO_R ARGUMENTS
+SEP_R PC
+
+
+.macro GOSUB
+;preserves D for use in subroutine
+DEC_R STACK
+STR_R STACK
+LDI >CALL
+PHI_R GOSUBREG
+LDI <CALL
+PLO_R GOSUBREG
+LDN_R STACK
+INC_R STACK
+SEP_R GOSUBREG
+.dw %%1
+.endm
+
+.macro RETSUB
+;preserves D for return value from subroutine
+DEC_R STACK
+STR_R STACK
+LDI >RETURN
+PHI_R GOSUBREG
+LDI <RETURN
+PLO_R GOSUBREG
+LDN_R STACK
+INC_R STACK
+SEP_R GOSUBREG
+.endm
+
+
+; utility subroutines
+
+LONGDELAY:
+LDI 0x40
+LSKP
+DELAY:
+.if NODELAYS=0
+LDI 0x01
+PHI_R GOSUBREG
+LDI 0x00
+PLO_R GOSUBREG
+.else
+LDI 0x00
+PHI_R GOSUBREG
+LDI 0x01
+PLO_R GOSUBREG
+.endif
+DELAYLOOP:
+DEC_R GOSUBREG
+GHI_R GOSUBREG
+LBNZ DELAYLOOP
+GLO_R GOSUBREG
+LBNZ DELAYLOOP
+RETSUB
+
+
+; specialty subroutines

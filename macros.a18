@@ -1,0 +1,255 @@
+; place to define common macros
+
+; replacesments for register op codes
+; allowing the use of constants for registers
+
+.macro LDN_R:
+db 0x00 | %%1 ; LDN
+.endm
+
+.macro INC_R:
+db 0x10 | %%1 ; INC
+.endm
+
+.macro DEC_R:
+db 0x20 | %%1 ; DEC
+.endm
+
+.macro LDA_R
+db 0x40 | %%1 ; LDA
+.endm
+
+.macro STR_R:
+db 0x50 | %%1 ; STR
+.endm
+
+.macro GLO_R:
+db 0x80 | %%1 ; GLO
+.endm
+
+.macro GHI_R:
+db 0x90 | %%1 ; GHI
+.endm
+
+.macro PLO_R:
+db 0xA0 | %%1 ; PLO
+.endm
+
+.macro PHI_R:
+db 0xB0 | %%1 ; PHI
+.endm
+
+.macro SEP_R:
+db 0xD0 | %%1 ; SEP
+.endm
+
+.macro SEX_R:
+db 0xE0 | %%1 ; SEX
+.endm
+
+
+.macro CLEARREG ; REG set to 0x00
+LDI 0x00
+PHI_R %%1
+PLO_R %%1
+.endm
+
+.macro LOADREG ; ADDRESS, REG
+LDI msb(%%1)
+PHI_R %%2
+LDI lsb(%%1)
+PLO_R %%2
+.endm
+
+.macro LOADREGLDN ; ADDRESS, REG
+LDI msb(%%1)
+PHI_R %%2
+LDI lsb(%%1)
+PLO_R %%2
+LDN_R %%2
+.endm 
+
+.macro LOADREGCLR ; ADDRESS, REG
+LDI msb(%%1)
+PHI_R %%2
+LDI lsb(%%1)
+PLO_R %%2
+LDI 0x00
+STR_R %%2
+.endm 
+
+
+; I/O interface macros
+
+; SETIO register/port
+.macro SETIO
+LDI %%1 ; set register/device to %%1
+DEC_R STACK
+STR_R STACK
+OUT 001b ; latch i/o register/device, increments R(5)
+.endm 
+
+; WRITEIO value
+.macro WRITEIO
+LDI %%1
+DEC_R STACK
+STR_R STACK
+OUT 100b ; send %%1 to IO, increments STACK
+.endm
+
+; READIO value
+.macro READIO
+INP 110b ; puts value on stack
+DEC_R STACK ; move stack pointer
+.endm
+
+
+; print byte in D
+.macro PRCHAR
+STR_R STACK
+DEC_R STACK
+GOSUB PRCHAR_SUB
+.endm
+
+
+; print byte in D as hex pair
+.macro PRBYTE
+STR_R STACK
+DEC_R STACK
+GOSUB PRBYTE_SUB
+.endm
+
+; print word in argument
+.macro PRWORD
+LDI msb(%%1)
+PRBYTE
+LDI lsb(%%1)
+PRBYTE
+.endm
+
+;print "word-word" from arguments
+.macro PRRANGE
+PRWORD %%1
+LDI "-"
+PRCHAR
+PRWORD %%2
+.endm
+
+;print static string
+.macro PRSTRING
+GOSUB PRSTR
+.cstr %%1
+.endm
+
+;print CRLF terminated static string
+.macro PRSTRINGCRLF
+GOSUB PRSTR
+.cstr %%1
+PRCRLF
+.endm
+
+
+;claude authored interrupt enable/disable
+
+.macro DISABLE_INTERRUPTS
+    LDI   >XPSAVE
+    PHI_R SCRATCHREG
+    LDI   <XPSAVE
+    PLO_R SCRATCHREG
+    SEX_R SCRATCHREG
+    DIS              ; IE <- 0, X,P reloaded unchanged, R(SCRATCHREG)+1
+    SEX_R STACK
+.endm
+
+.macro ENABLE_INTERRUPTS
+    LDI   >XPSAVE
+    PHI_R SCRATCHREG
+    LDI   <XPSAVE
+    PLO_R SCRATCHREG
+    SEX_R SCRATCHREG
+    RET              ; IE <- 1, X,P reloaded unchanged, R(SCRATCHREG)+1
+    SEX_R STACK
+.endm
+
+; prints CR/LF
+; restores d to value on entry
+.macro PRCRLF
+DEC_R STACK
+STR_R STACK
+LDI 13
+PRCHAR
+LDI 10
+PRCHAR
+LDN_R STACK
+INC_R STACK
+.endm
+
+; CLC
+.macro CLEARCARRY
+LDI 0x00
+SHR
+.endm
+
+; SEC
+.macro SETCARRY
+LDI 0x01
+SHR
+.endm
+
+; for wozmon, jump execution to this address
+.macro JUMPEXECUTE
+    LDI >TMPJMP%%M
+    PHI_R ARGUMENTS
+    LDI <TMPJMP%%M
+    PLO_R ARGUMENTS
+    SEP_R ARGUMENTS
+TMPJMP%%M: 
+    GHI_R %%1
+    PHI_R PC
+    GLO_R %%1
+    PLO_R PC
+    SEP_R PC
+.endm    
+
+; 4 bit left shift from D to %%1 low to %%1 high
+; for wozmon
+.macro biglshift 
+DEC_R STACK
+SHL
+STR_R STACK
+GLO_R %%1
+SHLC
+PLO_R %%1
+GHI_R %%1
+SHLC
+PHI_R %%1
+LDN_R STACK
+SHL
+STR_R STACK
+GLO_R %%1
+SHLC
+PLO_R %%1
+GHI_R %%1
+SHLC
+PHI_R %%1
+LDN_R STACK
+SHL
+STR_R STACK
+GLO_R %%1
+SHLC
+PLO_R %%1
+GHI_R %%1
+SHLC
+PHI_R %%1
+LDN_R STACK
+SHL
+STR_R STACK
+GLO_R %%1
+SHLC
+PLO_R %%1
+GHI_R %%1
+SHLC
+PHI_R %%1
+INC_R STACK
+.endm
+

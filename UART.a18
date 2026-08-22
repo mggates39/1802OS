@@ -1,0 +1,116 @@
+; Subroutine for Init UART, no arguments
+UARTINIT:
+
+; LCR to 10000000
+SETIO 0x03
+WRITEIO 0x80
+
+; Divisor latch 
+; 0x000C for 9600 @ 1.8432mHz
+; 0x0018 for 9600 @ 3.6864mHz
+; 0x0180 for 1200 @ 7.3728mHz
+; 0x00C0 for 2400 @ 7.3728mHz
+; 0x0030 for 9600 @ 7.3728mHz
+; 0x0018 for 19200 @ 7.3728mHz
+; 0x000C for 38400 @ 7.3728mHz
+; 0x0008 for 57600 @ 7.3728mhz
+; 0x0004 for 115200 @ 7.3728mhz
+; 0x0001 for 460800 @ 7.3728mHz
+SETIO 0x01
+WRITEIO 0x00 ; high byte
+SETIO 0x00
+WRITEIO 0x08 ; low byte
+
+; LCR to 00000011, disable DL, 8N1
+SETIO 0x03
+WRITEIO 0x03
+
+; FCR to 00000111, reset and enable hardware FIFOs
+SETIO 0x02
+WRITEIO 0x07
+
+; MCR to 00000000, no out1/out2
+SETIO 0x04
+WRITEIO 0x00
+
+; IER to 00000000, no interrupts
+; 00000010, transmit interrupt
+; 00000001, receive interrupt
+; 00000011, transmit & receive interrupt
+SETIO 0x01
+WRITEIO 0x03
+
+RETSUB
+
+; print a single character from D
+PRCHAR_SUB:
+PRCHAR_WAIT:
+SEQ
+LOADREGLDN UARTSENDBUFFERHEAD, SCRATCHREG  ; D = head
+DEC_R STACK
+STR_R STACK                                 ; push head
+LOADREGLDN UARTSENDBUFFERTAIL, SCRATCHREG  ; D = tail
+SD                                          ; D = head - tail = bytes used
+INC_R STACK
+SMI 0xFF                                    ; DF=1 if full (255 bytes used)
+LBDF PRCHAR_WAIT
+REQ
+DISABLE_INTERRUPTS
+LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
+LDI >UARTOUTBUFFER
+PHI_R UARTREG
+LDN_R SCRATCHREG
+PLO_R UARTREG
+INC_R STACK
+LDN_R STACK ; get byte to print off stack
+STR_R UARTREG ; store to head of buffer
+INC_R UARTREG ; in head pointer
+GLO_R UARTREG 
+STR_R SCRATCHREG ; write head pointer to memory
+; enable UART send interrupt
+SETIO 0x01
+INP 110b ; status byte in D
+ORI 0x02 ; make sure transmit buffer int bit is on
+STR_R STACK ; push new status byte to stack
+OUT 100b ; write 
+DEC_R STACK ; restore stack pointer
+ENABLE_INTERRUPTS
+RETSUB
+
+PRBYTE_SUB:
+LDI >HEXTABLE
+PHI_R SCRATCHREG
+INC_R STACK
+LDN_R STACK
+SHR
+SHR
+SHR
+SHR
+ADI <HEXTABLE ; hex char table offset by 0xF0
+PLO_R SCRATCHREG
+LDN_R SCRATCHREG
+DEC_R STACK
+STR_R STACK
+DEC_R STACK
+GOSUB PRCHAR_SUB
+LDI >HEXTABLE
+PHI_R SCRATCHREG
+INC_R STACK
+LDN_R STACK
+ANI 0x0F ; AND not ADD
+ADI <HEXTABLE ; hex char table offset by 0xF0
+PLO_R SCRATCHREG
+LDN_R SCRATCHREG
+STR_R STACK
+DEC_R STACK
+GOSUB PRCHAR_SUB
+RETSUB
+
+PRSTR:
+LDA_R ARGUMENTS
+LBZ ENDPRSTR
+PRCHAR
+LBR PRSTR
+ENDPRSTR:
+RETSUB
+

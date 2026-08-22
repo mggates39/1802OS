@@ -1,0 +1,43 @@
+; Equates for all standard locations
+
+BOOT equ BEGINNING
+ROMSTART equ BEGINNING
+RAMSTART equ STACKTOP + 1
+REG0 equ 0x00
+REG1 equ 0x01
+REG2 equ 0x02
+REG3 equ 0x03
+REG4 equ 0x04
+REG5 equ 0x05
+REG6 equ 0x06
+REG7 equ 0x07
+REG8 equ 0x08
+REG9 equ 0x09
+REG10 equ 0x0A
+REG11 equ 0x0B
+REG12 equ 0x0C
+REG13 equ 0x0D
+REG14 equ 0x0E
+REG15 equ 0x0F
+
+PC equ REG0
+INTERRUPT equ REG1 ; pointer to interrupt handler
+STACK equ REG2 
+
+GOSUBREG equ REG3 ; 3 registers for GOSUB functionality
+RETURNSTACK equ REG4 ; seperate stack for GOSUB returns
+ARGUMENTS equ REG5 ; pointer to caller/arguments
+
+SCRATCHREG equ REG6 ; never trust this to not be clobbered
+UARTREG equ REG7 ; FOR consuming the read buffer or
+                  ; adding to the send buffer
+
+INTERRUPTREG2 equ REG8 ; for use in interrupt handler
+INTERRUPTREG equ REG9 ; for use in interrupt handler
+
+USERREG0 equ REG10
+USERREG1 equ REG11
+USERREG2 equ REG12
+USERREG3 equ REG13
+USERREG4 equ REG14
+USERREG5 equ REG15
