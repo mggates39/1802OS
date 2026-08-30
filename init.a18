@@ -13,7 +13,7 @@ INITSYSTEM:
     LDI (ENDROM) >> 8 ; >ENDROM
     PHI USERREG0
 ; clear RAM as C4 (nop) loop
-    LDI (ENDROM) && 0ffh
+    LDI (ENDROM) & 0ffh
     PLO USERREG0
 CLEARRAMLOOP:
     LDI 00h
@@ -47,7 +47,6 @@ WARMBOOT:
     LOADREG INTERRUPTHANDLER, INTERRUPT
 
 
-
 ; clear OSMEM 16 bytes
 ; clear ram at 8000h - FFFFh
 
@@ -63,5 +62,5 @@ OSMEMINIT:
     BNZ OSMEMINIT
 
 ; clear Q when startup done
-REQ
+    REQ
 

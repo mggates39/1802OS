@@ -1,205 +1,205 @@
 ; Interrupt Handler
 ; Loops back to beginning address to restore R(1)
-INTEND: 
-INC STACK 
-LDA STACK
-SHR
-LDA STACK ; restore D and stack to original position
-RET
+    INTEND: 
+    INC STACK 
+    LDA STACK
+    SHR
+    LDA STACK ; restore D and stack to original position
+    RET
 
 INTERRUPTHANDLER:
-SEX STACK
-DEC STACK ; we don't know if stack is mid-use
-SAV ; save X,P
-DEC STACK
-STR STACK ; save D
-DEC STACK
-SHLC
-STR STACK ; save DL 
+    SEX STACK
+    DEC STACK ; we don't know if stack is mid-use
+    SAV ; save X,P
+    DEC STACK
+    STR STACK ; save D
+    DEC STACK
+    SHLC
+    STR STACK ; save DL 
 
 ; check UART interrupts
-DEC STACK
-SETIO 02h
-DEC STACK
-INP 110b ; read byte from UART to stack and D
-ANI 01h ; mask interrupt pending bit
-LBNZ CHECKRTC
-LDN STACK
-ANI 0Eh ; mask interrupt ID
-SMI 02h ; RX
-LBZ HANDLETX
-LDN STACK
-ANI 0Eh ; mask interrupt ID
-SMI 04h ; RX
-LBZ HANDLERX
-LDN STACK
-ANI 0Eh ; mask interrupt ID
-SMI 06h ; RLS
-LBZ HANDLERLS
+    DEC STACK
+    SETIO 02h
+    DEC STACK
+    INP 110b ; read byte from UART to stack and D
+    ANI 01h ; mask interrupt pending bit
+    LBNZ CHECKRTC
+    LDN STACK
+    ANI 0Eh ; mask interrupt ID
+    SMI 02h ; RX
+    LBZ HANDLETX
+    LDN STACK
+    ANI 0Eh ; mask interrupt ID
+    SMI 04h ; RX
+    LBZ HANDLERX
+    LDN STACK
+    ANI 0Eh ; mask interrupt ID
+    SMI 06h ; RLS
+    LBZ HANDLERLS
 
 HANDLETX:
-LOADREGLDN XOFFPENDING, INTERRUPTREG
-LBZ SKIPXOFF
-SETIO 00h ; UART data port
-SEX INTERRUPTREG
-OUT 100b 
-SEX STACK
-DEC INTERRUPTREG
-LDI 00H
-STR INTERRUPTREG
-LBR DONEUART
+    LOADREGLDN XOFFPENDING, INTERRUPTREG
+    LBZ SKIPXOFF
+    SETIO 00h ; UART data port
+    SEX INTERRUPTREG
+    OUT 100b 
+    SEX STACK
+    DEC INTERRUPTREG
+    LDI 00H
+    STR INTERRUPTREG
+    LBR DONEUART
 
 SKIPXOFF:
-LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG ; check byte count in out buffer
-STR STACK
-LOADREGLDN UARTSENDBUFFERTAIL, INTERRUPTREG2 ; check byte count in out buffer
-SM
-LBZ STOPTRANSMITINTERRUPTS ; skip if buffer is 0 bytes
+    LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG ; check byte count in out buffer
+    STR STACK
+    LOADREGLDN UARTSENDBUFFERTAIL, INTERRUPTREG2 ; check byte count in out buffer
+    SM
+    LBZ STOPTRANSMITINTERRUPTS ; skip if buffer is 0 bytes
 
 ; tail ptr already in INTERRUPTREG2 from 0 byte check
-LDN INTERRUPTREG2 ; get tail pointer value
-PLO INTERRUPTREG ; push in to reg
-LDI >UARTOUTBUFFER 
-PHI INTERRUPTREG
-SETIO 0x00 ; UART data port
-SEX INTERRUPTREG
-OUT 100b 
-GLO INTERRUPTREG ; get incremented tail pointer
-STR INTERRUPTREG2 ; overwrite old tail value
-SEX STACK
+    LDN INTERRUPTREG2 ; get tail pointer value
+    PLO INTERRUPTREG ; push in to reg
+    LDI UARTOUTBUFFER >> 8
+    PHI INTERRUPTREG
+    SETIO 00h; UART data port
+    SEX INTERRUPTREG
+    OUT 100b 
+    GLO INTERRUPTREG ; get incremented tail pointer
+    STR INTERRUPTREG2 ; overwrite old tail value
+    SEX STACK
 ; compare tail and head to see if bytes left
-LDN INTERRUPTREG2
-DEC STACK
-STR STACK
-LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG
-SM
-INC STACK
-LBNZ DONEUART ; if not 0, skip disable uart
+    LDN INTERRUPTREG2
+    DEC STACK
+    STR STACK
+    LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG
+    SM
+    INC STACK
+    LBNZ DONEUART ; if not 0, skip disable uart
 ; char count is zero, stop interrupts
 STOPTRANSMITINTERRUPTS:
-DEC STACK ; don't overwrite interrupt status
-SETIO 0x01 ; IO to int register
-INP 110b ; get flags
-ANI 0xFD ; 11111101 to set transmit int to 0
-STR STACK ; push to stack
-OUT 100b    ; OUT grabs from stack, increments back to ISR
-LBR DONEUART
+    DEC STACK ; don't overwrite interrupt status
+    SETIO 01h ; IO to int register
+    INP 110b ; get flags
+    ANI 0FDh ; 11111101 to set transmit int to 0
+    STR STACK ; push to stack
+    OUT 100b    ; OUT grabs from stack, increments back to ISR
+    LBR DONEUART
 
 HANDLERX:
-LOADREG UARTRECVBUFFERHEAD, INTERRUPTREG
-LDI >UARTINBUFFER ; pointer to buffer start
-PHI INTERRUPTREG2 
-LDN INTERRUPTREG ; pointer to head value
-PLO INTERRUPTREG2 
-SETIO 0x00
-DEC STACK
-INP 110b
-SMI 0x03 ; check if ctrl-c
-LBZ WARMBOOTJMP
-SMI 0x17 ; check if ctrl-Z
-LBZ REBOOT
-SMI 0x02 ; check if ctrl-\
-LBZ HARDBOOT
-LDN STACK
-INC STACK
-STR INTERRUPTREG2 ; store byte in head
-INC INTERRUPTREG2 ; inc pointer
-GLO INTERRUPTREG2 ; 
-STR INTERRUPTREG  ;
-LOADREGLDN UARTRECVNEWFLAG, INTERRUPTREG ; pointer to new char flag
-ADI 0x01            ; set flag to number of chars
-STR INTERRUPTREG  ;
+    LOADREG UARTRECVBUFFERHEAD, INTERRUPTREG
+    LDI UARTINBUFFER >> 8 ; pointer to buffer start
+    PHI INTERRUPTREG2 
+    LDN INTERRUPTREG ; pointer to head value
+    PLO INTERRUPTREG2 
+    SETIO 00h
+    DEC STACK
+    INP 110b
+    SMI 03h ; check if ctrl-c
+    LBZ WARMBOOTJMP
+    SMI 017h ; check if ctrl-Z
+    LBZ REBOOT
+    SMI 02h ; check if ctrl-\
+    LBZ HARDBOOT
+    LDN STACK
+    INC STACK
+    STR INTERRUPTREG2 ; store byte in head
+    INC INTERRUPTREG2 ; inc pointer
+    GLO INTERRUPTREG2 ; 
+    STR INTERRUPTREG  ;
+    LOADREGLDN UARTRECVNEWFLAG, INTERRUPTREG ; pointer to new char flag
+    ADI 01h            ; set flag to number of chars
+    STR INTERRUPTREG  ;
 ; INTERRUPTREG is pointer to byte count
-SMI 0xC0
-LBDF SENDXOFF
+    SMI 0C0h
+    LBDF SENDXOFF
 
 DONEUART:
-INC STACK
-LBR INTEND
+    INC STACK
+    LBR INTEND
 
 CHECKRTC: ; comes with STACK decremented
-SETIO 0x1E
-INP 110b
-ANI 0x10 ; interrupt enabled?
-LBZ INTEND ; no RTC interrupt
-LDN STACK
-ANI 0x80 ; and overflow flag set
-LBZ INTEND
+    SETIO 01Eh
+    INP 110b
+    ANI 010h ; interrupt enabled?
+    LBZ INTEND ; no RTC interrupt
+    LDN STACK
+    ANI 080h ; and overflow flag set
+    LBZ INTEND
 ; clear interrupt & enable new interrupt
 
 ; refresh time variable in memory every 1hz
 
-LOADREG TIME, INTERRUPTREG
-SETIO 0x17
-INP 110b
-STR INTERRUPTREG
-INC INTERRUPTREG
-SETIO 0x16
-INP 110b
-STR INTERRUPTREG
-INC INTERRUPTREG
-SETIO 0x15
-INP 110b
-STR INTERRUPTREG
-INC INTERRUPTREG
-SETIO 0x13
-INP 110b
-STR INTERRUPTREG
-INC INTERRUPTREG
-SETIO 0x12
-INP 110b
-STR INTERRUPTREG
-INC INTERRUPTREG
-SETIO 0x11
-INP 110b
-STR INTERRUPTREG
+    LOADREG TIMEBASE, INTERRUPTREG
+    SETIO 017h
+    INP 110b
+    STR INTERRUPTREG
+    INC INTERRUPTREG
+    SETIO 016h
+    INP 110b
+    STR INTERRUPTREG
+    INC INTERRUPTREG
+    SETIO 015h
+    INP 110b
+    STR INTERRUPTREG
+    INC INTERRUPTREG
+    SETIO 013h
+    INP 110b
+    STR INTERRUPTREG
+    INC INTERRUPTREG
+    SETIO 012h
+    INP 110b
+    STR INTERRUPTREG
+    INC INTERRUPTREG
+    SETIO 011h
+    INP 110b
+    STR INTERRUPTREG
 
-INC STACK    
-SETIO 0x1E
-WRITEIO 0x10
+    INC STACK    
+    SETIO 01Eh
+    WRITEIO 010h
 
-LBR INTEND
+    LBR INTEND
 
 
 HARDBOOT:
-LDI 0x00
-PHI PC
-PLO PC
-SEP PC
+    LDI 00h
+    PHI PC
+    PLO PC
+    SEP PC
 
 REBOOT:
-LDI >INITSYSTEM
-PHI PC
-LDI <INITSYSTEM
-PLO PC
-SEP PC
+    LDI INITSYSTEM >> 8
+    PHI PC
+    LDI INITSYSTEM & 0ffh
+    PLO PC
+    SEP PC
 
 WARMBOOTJMP:
-LDI >WARMBOOT
-PHI PC
-LDI <WARMBOOT
-PLO PC
-SEP PC
+    LDI WARMBOOT >> 8
+    PHI PC
+    LDI WARMBOOT & 0ffh
+    PLO PC
+    SEP PC
 
 SENDXOFF:
-LOADREGLDN FLOWCONTROL, INTERRUPTREG
-LBNZ DONEUART
-LDI 0xff
-STR INTERRUPTREG
-LOADREG XOFFPENDING, INTERRUPTREG
-LDI 0x13
-STR INTERRUPTREG
-DEC STACK
-SETIO 0x01
-INP 110b ; status byte in D
-ORI 0x02 ; make sure transmit buffer int bit is on
-STR STACK ; push new status byte to stack
-OUT 100b ; write 
+    LOADREGLDN FLOWCONTROL, INTERRUPTREG
+    LBNZ DONEUART
+    LDI 0ffh
+    STR INTERRUPTREG
+    LOADREG XOFFPENDING, INTERRUPTREG
+    LDI 013h
+    STR INTERRUPTREG
+    DEC STACK
+    SETIO 01h
+    INP 110b ; status byte in D
+    ORI 02h ; make sure transmit buffer int bit is on
+    STR STACK ; push new status byte to stack
+    OUT 100b ; write 
 
-LBR DONEUART
+    LBR DONEUART
 
 HANDLERLS:
-SETIO 0x05
-INP 110b
-LBR DONEUART
+    SETIO 05h
+    INP 110b
+    LBR DONEUART
 

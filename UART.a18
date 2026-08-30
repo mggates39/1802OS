@@ -2,8 +2,8 @@
 UARTINIT:
 
 ; LCR to 10000000
-SETIO 0x03
-WRITEIO 0x80
+    SETIO 03h
+    WRITEIO 080h
 
 ; Divisor latch 
 ; 0x000C for 9600 @ 1.8432mHz
@@ -16,101 +16,101 @@ WRITEIO 0x80
 ; 0x0008 for 57600 @ 7.3728mhz
 ; 0x0004 for 115200 @ 7.3728mhz
 ; 0x0001 for 460800 @ 7.3728mHz
-SETIO 0x01
-WRITEIO 0x00 ; high byte
-SETIO 0x00
-WRITEIO 0x08 ; low byte
+    SETIO 01h
+    WRITEIO 00h ; high byte
+    SETIO 00h
+    WRITEIO 08h ; low byte
 
 ; LCR to 00000011, disable DL, 8N1
-SETIO 0x03
-WRITEIO 0x03
+    SETIO 03h
+    WRITEIO 03h
 
 ; FCR to 00000111, reset and enable hardware FIFOs
-SETIO 0x02
-WRITEIO 0x07
+    SETIO 02h
+    WRITEIO 07h
 
 ; MCR to 00000000, no out1/out2
-SETIO 0x04
-WRITEIO 0x00
+    SETIO 04h
+    WRITEIO 00h
 
 ; IER to 00000000, no interrupts
 ; 00000010, transmit interrupt
 ; 00000001, receive interrupt
 ; 00000011, transmit & receive interrupt
-SETIO 0x01
-WRITEIO 0x03
+    SETIO 01h
+    WRITEIO 03h
 
-RETSUB
+    RETSUB
 
 ; print a single character from D
-PRCHAR_SUB:
-PRCHAR_WAIT:
-SEQ
-LOADREGLDN UARTSENDBUFFERHEAD, SCRATCHREG  ; D = head
-DEC STACK
-STR STACK                                 ; push head
-LOADREGLDN UARTSENDBUFFERTAIL, SCRATCHREG  ; D = tail
-SD                                          ; D = head - tail = bytes used
-INC STACK
-SMI 0xFF                                    ; DF=1 if full (255 bytes used)
-LBDF PRCHAR_WAIT
-REQ
-DISABLE_INTERRUPTS
-LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
-LDI >UARTOUTBUFFER
-PHI UARTREG
-LDN SCRATCHREG
-PLO UARTREG
-INC STACK
-LDN STACK ; get byte to print off stack
-STR UARTREG ; store to head of buffer
-INC UARTREG ; in head pointer
-GLO UARTREG 
-STR SCRATCHREG ; write head pointer to memory
+    PRCHAR_SUB:
+    PRCHAR_WAIT:
+    SEQ
+    LOADREGLDN UARTSENDBUFFERHEAD, SCRATCHREG  ; D = head
+    DEC STACK
+    STR STACK                                 ; push head
+    LOADREGLDN UARTSENDBUFFERTAIL, SCRATCHREG  ; D = tail
+    SD                                          ; D = head - tail = bytes used
+    INC STACK
+    SMI 0ffh                                    ; DF=1 if full (255 bytes used)
+    LBDF PRCHAR_WAIT
+    REQ
+    DISABLE_INTERRUPTS
+    LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
+    LDI UARTOUTBUFFER >> 8
+    PHI UARTREG
+    LDN SCRATCHREG
+    PLO UARTREG
+    INC STACK
+    LDN STACK ; get byte to print off stack
+    STR UARTREG ; store to head of buffer
+    INC UARTREG ; in head pointer
+    GLO UARTREG 
+    STR SCRATCHREG ; write head pointer to memory
 ; enable UART send interrupt
-SETIO 0x01
-INP 110b ; status byte in D
-ORI 0x02 ; make sure transmit buffer int bit is on
-STR STACK ; push new status byte to stack
-OUT 100b ; write 
-DEC STACK ; restore stack pointer
-ENABLE_INTERRUPTS
-RETSUB
+    SETIO 01h
+    INP 110b ; status byte in D
+    ORI 02h ; make sure transmit buffer int bit is on
+    STR STACK ; push new status byte to stack
+    OUT 100b ; write 
+    DEC STACK ; restore stack pointer
+    ENABLE_INTERRUPTS
+    RETSUB
 
 PRBYTE_SUB:
-LDI >HEXTABLE
-PHI SCRATCHREG
-INC STACK
-LDN STACK
-SHR
-SHR
-SHR
-SHR
-ADI <HEXTABLE ; hex char table offset by 0xF0
-PLO SCRATCHREG
-LDN SCRATCHREG
-DEC STACK
-STR STACK
-DEC STACK
-GOSUB PRCHAR_SUB
-LDI >HEXTABLE
-PHI SCRATCHREG
-INC STACK
-LDN STACK
-ANI 0x0F ; AND not ADD
-ADI <HEXTABLE ; hex char table offset by 0xF0
-PLO SCRATCHREG
-LDN SCRATCHREG
-STR STACK
-DEC STACK
-GOSUB PRCHAR_SUB
-RETSUB
+    LDI HEXTABLE >> 8
+    PHI SCRATCHREG
+    INC STACK
+    LDN STACK
+    SHR
+    SHR
+    SHR
+    SHR
+    ADI HEXTABLE & 0ffh ; hex char table offset by 0xF0
+    PLO SCRATCHREG
+    LDN SCRATCHREG
+    DEC STACK
+    STR STACK
+    DEC STACK
+    GOSUB PRCHAR_SUB
+    LDI HEXTABLE & 0ffh
+    PHI SCRATCHREG
+    INC STACK
+    LDN STACK
+    ANI 0Fh ; AND not ADD
+    ADI HEXTABLE & 0ffh ; hex char table offset by 0xF0
+    PLO SCRATCHREG
+    LDN SCRATCHREG
+    STR STACK
+    DEC STACK
+    GOSUB PRCHAR_SUB
+    RETSUB
 
 PRSTR:
-LDA ARGUMENTS
-LBZ ENDPRSTR
-PRCHAR
-LBR PRSTR
+    LDA ARGUMENTS
+    LBZ ENDPRSTR
+    PRCHAR
+    LBR PRSTR
 ENDPRSTR:
-RETSUB
+    RETSUB
 

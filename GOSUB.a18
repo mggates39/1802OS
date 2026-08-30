@@ -57,7 +57,7 @@ GOSUB   macro ADDR
     STR STACK
     LDI (CALL) >> 8
     PHI GOSUBREG
-    LDI (CALL) && 0ffh
+    LDI (CALL) & 0ffh
     PLO GOSUBREG
     LDN STACK
     INC STACK
@@ -71,7 +71,7 @@ RETSUB  macro
     STR STACK
     LDI (RETURN) >> 8
     PHI GOSUBREG
-    LDI (RETURN) && 0ffh
+    LDI (RETURN) & 0ffh
     PLO GOSUBREG
     LDN STACK
     INC STACK

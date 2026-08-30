@@ -8,13 +8,14 @@ SKIPMEMORY = 0
     include definitions.a18
     include directives.a18
     include macros.a18
-    include GOSUB.a18
 
     org ROMSTART + 0100h
     include init.a18
 
-;   GOSUB UARTINIT
-;   GOSUB RTCINIT
+    include GOSUB.a18
+
+    GOSUB UARTINIT
+    GOSUB RTCINIT
 
     ENABLE_INTERRUPTS
 
@@ -25,14 +26,13 @@ SKIPMEMORY = 0
     PRCRLF
     PRCRLF
 
-;include wozmon.a18
-;include UART.a18
-;include RTC.a18
-;include interrupt.a18
+    include wozmon.a18
+    include UART.a18
+    include RTC.a18
+    include interrupt.a18
 
 ENDBIOS:
-    include fib256.a18
-
+ 
 
 ENDROM:
     align 0100h
@@ -40,5 +40,6 @@ BUFFERS:
     include buffers.a18
 
 
+   include fib256.a18
 
 

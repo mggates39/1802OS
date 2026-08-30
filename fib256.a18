@@ -35,7 +35,7 @@ FIB256START:
 
     ; initialise FIBA = 0x0000000000000001
     LOADREG FIBA, USERREG0
-    LOADREG DATABYTES - 1, USERREG3    ; 0 - databytes - 1 loop
+    LOADREG (DATABYTES - 1), USERREG3    ; 0 - databytes - 1 loop
 FIB256_INIT_FIBA_ZERO:
     LDI 00h
     STR USERREG0
@@ -50,7 +50,7 @@ FIB256_INIT_FIBA_ZERO:
 
     ; initialise FIBB = 0x0000000000000000
     LOADREG FIBB, USERREG0
-    LOADREG DATABYTES - 1, USERREG3    ; 0 - databytes - 1 loop
+    LOADREG (DATABYTES - 1), USERREG3    ; 0 - databytes - 1 loop
 FIB256_INIT_FIBB_ZERO:
     LDI 00h
     STR USERREG0
@@ -73,9 +73,9 @@ FIB256LOOP:
     ; work from byte 31 (LSB) to byte 0 (MSB)
 
     ; set up pointers to byte 31 of each value
-    LOADREG FIBA + DATABYTES - 1, USERREG0
-    LOADREG FIBB + DATABYTES - 1, USERREG1
-    LOADREG FIBT + DATABYTES - 1, USERREG2
+    LOADREG (FIBA + DATABYTES - 1), USERREG0
+    LOADREG (FIBB + DATABYTES - 1), USERREG1
+    LOADREG (FIBT + DATABYTES - 1), USERREG2
 
     ; clear carry before addition
     LDI 00h
@@ -154,7 +154,7 @@ FIB256_OVERFLOW:
 
     ; display start and end times
     PRSTRING "Bits per variable : 0x"
-    PRWORD DATABYTES * 8
+    PRWORD (DATABYTES * 8)
     PRCRLF
     
 

@@ -10,14 +10,14 @@ FIB256DISPLAY:
 
     org BEGINNING + 070h
 ; 16 bytes for timer start/stop
-TIME:
+TIMEBASE:
 TIME_YR: db 00h
 TIME_MO: db 00h
 TIME_DA: db 00h
 TIME_HO: db 00h
 TIME_MI: db 00h
 TIME_SE: db 00h
-TIMERSTARR:
+TIMERSTART:
 TIMERSTART_YR: db 00h
 TIMERSTART_MO: db 00h
 TIMERSTART_DA: db 00h
@@ -47,5 +47,5 @@ HEXTABLE: db "0123456789ABCDEF"
 ; 64 bytes for the wozmon input line buffer
 ; wozmon buffer has no overflow protection
     align 010h
-WOZMONLINE: db 00h
+WOZMONLINE: db 64 dup 00h
 

@@ -1,53 +1,5 @@
 ; place to define common macros
 
-; replacesments for register op codes
-; allowing the use of constants for registers
-
-LDN_R   macro REG
-    db 00H | REG ; LDN REG
-    endm
-
-INC_R   macro REG
-    db 010h | REG ; INC REG
-    endm
-
-DEC_R   macro REG
-    db 020h | REG ; DEC REG
-    endm
-
-LDA_R   macro REG
-    db 040h | REG ; LDA REG
-    endm
-
-STR_R   macro REG
-    db 050h | REG ; STR REG
-    endm
-
-GLO_R    macro REG
-    db 080h | REG ; GLO REG
-    endm
-
-GHI_R    macro REG
-    db 090 | REG ; GHI REG
-    endm
-
-PLO_R    macro REG
-    db 0A0h | REG ; PLO REG
-    endm
-
-PHI_R    macro REG
-    db 0B0h | REG ; PHI REG
-    endm
-
-SEP_R    macro REG
-    db 0D0h | REG ; SEP REG
-    endm
-
-SEX_R    macro REG
-    db 0E0h | REG ; SEX REG
-    endm
-
-
 CLEARREG    macro REG ; REG set to 0000H
     LDI 00h
     PHI REG
@@ -55,24 +7,24 @@ CLEARREG    macro REG ; REG set to 0000H
     endm
 
 LOADREG    macro ADDR, REG ; ADDRESS, REG
-    LDI (ADDR) >> 8
+    LDI ADDR >> 8
     PHI REG
-    LDI (ADDR) && 0ffh
+    LDI ADDR & 0ffh
     PLO REG
     endm
 
 LOADREGLDN     macro ADDR, REG; ADDRESS, REG
-    LDI (ADDR) >> 8
+    LDI ADDR >> 8
     PHI REG
-    LDI (ADDR) && 0ffh
+    LDI ADDR & 0ffh
     PLO REG
     LDN REG
     endm 
 
 LOADREGCLR     macro ADDR, REG ; ADDRESS, REG
-    LDI (ADDR) >> 8
+    LDI ADDR >> 8
     PHI REG
-    LDI (ADDR) && 0ffh
+    LDI ADDR & 0ffh
     PLO REG
     LDI 00h
     STR REG
@@ -121,9 +73,9 @@ PRBYTE  macro
 
 ; print word in argument
 PRWORD  macro ARG
-    LDI (ARG) >> 8
+    LDI ARG >> 8
     PRBYTE
-    LDI (ARG)
+    LDI ARG & 0ffh
     PRBYTE
     endm
 
@@ -152,9 +104,9 @@ PRSTRINGCRLF    macro STR
 ;claude authored interrupt enable/disable
 
 DISABLE_INTERRUPTS  macro
-    LDI (XPSAVE) >> 8
+    LDI XPSAVE >> 8
     PHI SCRATCHREG
-    LDI (XPSAVE) && 0ffh
+    LDI XPSAVE & 0ffh
     PLO SCRATCHREG
     SEX SCRATCHREG
     DIS              ; IE <- 0, X,P reloaded unchanged, R(SCRATCHREG)+1
@@ -162,9 +114,9 @@ DISABLE_INTERRUPTS  macro
     endm
 
 ENABLE_INTERRUPTS   macro
-    LDI (XPSAVE) >> 8
+    LDI XPSAVE >> 8
     PHI SCRATCHREG
-    LDI (XPSAVE) && 0ffh
+    LDI XPSAVE & 0ffh
     PLO SCRATCHREG
     SEX SCRATCHREG
     RET              ; IE <- 1, X,P reloaded unchanged, R(SCRATCHREG)+1
@@ -198,12 +150,12 @@ SETCARRY    macro
 
 ; for wozmon, jump execution to this address
 JUMPEXECUTE macro TARG
-    LDI a.1 (TMPJMP%%M)
+    LDI TMPJMPM >> 8
     PHI ARGUMENTS
-    LDI a.0 (TMPJMP%%M)
+    LDI TMPJMPM & 0FFh
     PLO ARGUMENTS
     SEP ARGUMENTS
-TMPJMP%%M: 
+TMPJMPM: 
     GHI TARG
     PHI PC
     GLO TARG
@@ -251,5 +203,18 @@ biglshift    macro LOC
     SHLC
     PHI LOC
     INC STACK
+    endm
+
+;
+; RTC support Macros
+;
+GETCLOCK    macro BUF
+    GOSUB GTCLOCK
+    dw BUF
+    endm
+
+DISPLAYCLOCK    macro DISPTIME
+    GOSUB DISPCLOCK
+    dw DISPTIME
     endm
 
