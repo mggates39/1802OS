@@ -1,4 +1,4 @@
-; ============================================================
+                                                                            ; ============================================================
 ; 64-bit Fibonacci sequence
 ; Assembled at 0x0900
 ; Data at 0x1000
@@ -23,7 +23,7 @@
 ;   COPYREG64 macro: copy 8 bytes from src to dst
 ; ============================================================
 
-DATABYTES   EQU 4096
+DATABYTES   EQU 1024
 FIBA        EQU USERRAM
 FIBB        EQU FIBA + DATABYTES
 FIBT        EQU FIBB + DATABYTES
@@ -37,31 +37,31 @@ FIB256START:
     LOADREG FIBA, USERREG0
     LOADREG DATABYTES - 1, USERREG3    ; 0 - databytes - 1 loop
 FIB256_INIT_FIBA_ZERO:
-    LDI 0x00
-    STR_R USERREG0
-    INC_R USERREG0
-    DEC_R USERREG3
-    GLO_R USERREG3
+    LDI 00h
+    STR USERREG0
+    INC USERREG0
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256_INIT_FIBA_ZERO
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256_INIT_FIBA_ZERO
-    LDI 0x01
-    STR_R USERREG0          ; FIBA[DATABYTES - 1] = 0x01
+    LDI 01h
+    STR USERREG0          ; FIBA[DATABYTES - 1] = 0x01
 
     ; initialise FIBB = 0x0000000000000000
     LOADREG FIBB, USERREG0
     LOADREG DATABYTES - 1, USERREG3    ; 0 - databytes - 1 loop
 FIB256_INIT_FIBB_ZERO:
-    LDI 0x00
-    STR_R USERREG0
-    INC_R USERREG0
-    DEC_R USERREG3
-    GLO_R USERREG3
+    LDI 00h
+    STR USERREG0
+    INC USERREG0
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256_INIT_FIBB_ZERO
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256_INIT_FIBB_ZERO
-    LDI 0x01
-    STR_R USERREG0          ; FIBB[DATABYTES - 1] = 0x01
+    LDI 01h
+    STR USERREG0          ; FIBB[DATABYTES - 1] = 0x01
 
     ; print first two terms manually
     GOSUB FIB256PRINT_FIBB   ; print 0000000000000000
@@ -78,37 +78,37 @@ FIB256LOOP:
     LOADREG FIBT + DATABYTES - 1, USERREG2
 
     ; clear carry before addition
-    LDI 0x00
+    LDI 00h
     SHR                     ; DF = 0
 
     LOADREG DATABYTES, USERREG3
 
 FIB256_ADDLOOP:
     ; load FIBA[i], push to stack
-    LDN_R USERREG0
-    DEC_R STACK
-    STR_R STACK             ; M(STACK) = FIBA[i]
+    LDN USERREG0
+    DEC STACK
+    STR STACK             ; M(STACK) = FIBA[i]
 
     ; load FIBB[i]
-    LDN_R USERREG1          ; D = FIBB[i]
+    LDN USERREG1          ; D = FIBB[i]
 
     ; D = FIBB[i] + M(STACK) + DF = FIBB[i] + FIBA[i] + carry
     ADC
 
     ; store result to FIBT[i]
-    STR_R USERREG2
-    INC_R STACK             ; restore stack
+    STR USERREG2
+    INC STACK             ; restore stack
 
     ; move pointers backward (toward MSB)
-    DEC_R USERREG0
-    DEC_R USERREG1
-    DEC_R USERREG2
+    DEC USERREG0
+    DEC USERREG1
+    DEC USERREG2
 
     ; decrement byte counter
-    DEC_R USERREG3
-    GLO_R USERREG3
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256_ADDLOOP
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256_ADDLOOP
 
     ; check overflow (DF set after MSB addition)
@@ -119,14 +119,14 @@ FIB256_ADDLOOP:
     LOADREG FIBB, USERREG1
     LOADREG DATABYTES, USERREG3
 FIB256_COPY_AB:
-    LDN_R USERREG0
-    STR_R USERREG1
-    INC_R USERREG0
-    INC_R USERREG1
-    DEC_R USERREG3
-    GLO_R USERREG3
+    LDN USERREG0
+    STR USERREG1
+    INC USERREG0
+    INC USERREG1
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256_COPY_AB
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256_COPY_AB
 
     ; FIBA = FIBT (copy 32 bytes)
@@ -134,14 +134,14 @@ FIB256_COPY_AB:
     LOADREG FIBA, USERREG1
     LOADREG DATABYTES, USERREG3
 FIB256_COPY_TA:
-    LDN_R USERREG0
-    STR_R USERREG1
-    INC_R USERREG0
-    INC_R USERREG1
-    DEC_R USERREG3
-    GLO_R USERREG3
+    LDN USERREG0
+    STR USERREG1
+    INC USERREG0
+    INC USERREG1
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256_COPY_TA
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256_COPY_TA
 
     ; print FIBA
@@ -158,7 +158,7 @@ FIB256_OVERFLOW:
     PRCRLF
     
 
-LBR NEWLINE
+    LBR NEWLINE
 
 
 ; ============================================================
@@ -179,27 +179,27 @@ FIB256PRINT_FIBB:
 ; followed by CR LF
 ; ============================================================
 FIB256PRINT:
-    DEC_R STACK
-    LDI 0x00
-    STR_R STACK
+    DEC STACK
+    LDI 00h
+    STR STACK
     LOADREG DATABYTES, USERREG3
 FIB256PRINT_LOOP:
-    LDN_R USERREG0
+    LDN USERREG0
     LBZ FIB256CHECKFLAG
-    STR_R STACK
+    STR STACK
 FIB256CHECKFLAG:
-    LDN_R STACK
+    LDN STACK
     LBZ FIB256SKIPPRINT
-    LDN_R USERREG0
+    LDN USERREG0
     PRBYTE
 FIB256SKIPPRINT:
-    INC_R USERREG0
-    DEC_R USERREG3
-    GLO_R USERREG3
+    INC USERREG0
+    DEC USERREG3
+    GLO USERREG3
     LBNZ FIB256PRINT_LOOP
-    GHI_R USERREG3
+    GHI USERREG3
     LBNZ FIB256PRINT_LOOP
-    INC_R STACK
+    INC STACK
     PRCRLF
     PRCRLF
     RETSUB

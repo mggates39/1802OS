@@ -2,17 +2,17 @@
 ; makes possible subroutine calling 
 ;
 ; example call to subroutine with immediate argument
-;LDI 0x11
+;LDI 011h
 ;GOSUB sub1
-;.cstr "Hello"
+;db "Hello", 0
 
 ;example subroutine which consumes arguments
 ;sub1:
-;SEX_R ARGUMENTS
+;SEX ARGUMENTS
 ;GETARG:
 ;LDXA 
 ;BNZ GETARG
-;SEX_R STACK
+;SEX STACK
 ;RETSUB
 
 ;example subroutine which consumes stack argument
@@ -22,87 +22,87 @@
 ;RETSUB
 
 CALL:
-GLO_R ARGUMENTS ; save previous location
-STR_R RETURNSTACK
-DEC_R RETURNSTACK
-GHI_R ARGUMENTS
-STR_R RETURNSTACK
-DEC_R RETURNSTACK
-GLO_R PC
-PLO_R ARGUMENTS ; store new calling location as arguments
-GHI_R PC
-PHI_R ARGUMENTS
-LDA_R ARGUMENTS
-PHI_R PC
-LDA_R ARGUMENTS
-PLO_R PC
-SEP_R PC
+    GLO ARGUMENTS ; save previous location
+    STR RETURNSTACK
+    DEC RETURNSTACK
+    GHI ARGUMENTS
+    STR RETURNSTACK
+    DEC RETURNSTACK
+    GLO PC
+    PLO ARGUMENTS ; store new calling location as arguments
+    GHI PC
+    PHI ARGUMENTS
+    LDA ARGUMENTS
+    PHI PC
+    LDA ARGUMENTS
+    PLO PC
+    SEP PC
 
 RETURN:
-GHI_R ARGUMENTS
-PHI_R PC
-GLO_R ARGUMENTS
-PLO_R PC
-INC_R RETURNSTACK
-LDA_R RETURNSTACK
-PHI_R ARGUMENTS
-LDN_R RETURNSTACK
-PLO_R ARGUMENTS
-SEP_R PC
+    GHI ARGUMENTS
+    PHI PC
+    GLO ARGUMENTS
+    PLO PC
+    INC RETURNSTACK
+    LDA RETURNSTACK
+    PHI ARGUMENTS
+    LDN RETURNSTACK
+    PLO ARGUMENTS
+    SEP PC
 
 
-.macro GOSUB
+GOSUB   macro ADDR
 ;preserves D for use in subroutine
-DEC_R STACK
-STR_R STACK
-LDI >CALL
-PHI_R GOSUBREG
-LDI <CALL
-PLO_R GOSUBREG
-LDN_R STACK
-INC_R STACK
-SEP_R GOSUBREG
-.dw %%1
-.endm
+    DEC STACK
+    STR STACK
+    LDI (CALL) >> 8
+    PHI GOSUBREG
+    LDI (CALL) && 0ffh
+    PLO GOSUBREG
+    LDN STACK
+    INC STACK
+    SEP GOSUBREG
+    dw ADDR
+    endm
 
-.macro RETSUB
+RETSUB  macro
 ;preserves D for return value from subroutine
-DEC_R STACK
-STR_R STACK
-LDI >RETURN
-PHI_R GOSUBREG
-LDI <RETURN
-PLO_R GOSUBREG
-LDN_R STACK
-INC_R STACK
-SEP_R GOSUBREG
-.endm
+    DEC STACK
+    STR STACK
+    LDI (RETURN) >> 8
+    PHI GOSUBREG
+    LDI (RETURN) && 0ffh
+    PLO GOSUBREG
+    LDN STACK
+    INC STACK
+    SEP GOSUBREG
+    endm
 
 
 ; utility subroutines
 
 LONGDELAY:
-LDI 0x40
-LSKP
+    LDI 040h
+    LSKP
 DELAY:
-.if NODELAYS=0
-LDI 0x01
-PHI_R GOSUBREG
-LDI 0x00
-PLO_R GOSUBREG
-.else
-LDI 0x00
-PHI_R GOSUBREG
-LDI 0x01
-PLO_R GOSUBREG
-.endif
+    if NODELAYS=0
+    LDI 01h
+    PHI GOSUBREG
+    LDI 00h
+    PLO GOSUBREG
+    else
+    LDI 00h
+    PHI GOSUBREG
+    LDI 01h
+    PLO GOSUBREG
+    endif
 DELAYLOOP:
-DEC_R GOSUBREG
-GHI_R GOSUBREG
-LBNZ DELAYLOOP
-GLO_R GOSUBREG
-LBNZ DELAYLOOP
-RETSUB
+    DEC GOSUBREG
+    GHI GOSUBREG
+    LBNZ DELAYLOOP
+    GLO GOSUBREG
+    LBNZ DELAYLOOP
+    RETSUB
 
 
 ; specialty subroutines

@@ -3,22 +3,22 @@
 BOOT equ BEGINNING
 ROMSTART equ BEGINNING
 RAMSTART equ STACKTOP + 1
-REG0 equ 0x00
-REG1 equ 0x01
-REG2 equ 0x02
-REG3 equ 0x03
-REG4 equ 0x04
-REG5 equ 0x05
-REG6 equ 0x06
-REG7 equ 0x07
-REG8 equ 0x08
-REG9 equ 0x09
-REG10 equ 0x0A
-REG11 equ 0x0B
-REG12 equ 0x0C
-REG13 equ 0x0D
-REG14 equ 0x0E
-REG15 equ 0x0F
+REG0 equ 00h
+REG1 equ 01h
+REG2 equ 02h
+REG3 equ 03h
+REG4 equ 04h
+REG5 equ 05h
+REG6 equ 06h
+REG7 equ 07h
+REG8 equ 08h
+REG9 equ 09h
+REG10 equ 0Ah
+REG11 equ 0Bh
+REG12 equ 0Ch
+REG13 equ 0Dh
+REG14 equ 0Eh
+REG15 equ 0Fh
 
 PC equ REG0
 INTERRUPT equ REG1 ; pointer to interrupt handler

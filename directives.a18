@@ -1,4 +1,4 @@
 ; compiler directives for all programs
-.cpu CDP1802 ; 1802 CPU
-.binto 0x7fff ; 32K bin files
-.org ROMSTART ; ROMSTART
+    cpu 1802 ; 1802 CPU
+ ;   binto 07fffh ; 32K bin files
+    org ROMSTART ; ROMSTART

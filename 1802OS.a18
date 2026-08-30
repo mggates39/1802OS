@@ -1,86 +1,44 @@
-BEGINNING equ 0x0000
-.org BEGINNING
+BEGINNING equ 0000h
+    org BEGINNING
 ; for debuggin, 1 to disable delays/memory wipe
 NODELAYS = 0
 SKIPMEMORY = 0
 
-.include jumptable.a18
-.include definitions.a18
-.include directives.a18
-.include macros.a18
+    include jumptable.a18
+    include definitions.a18
+    include directives.a18
+    include macros.a18
+    include GOSUB.a18
 
-.org ROMSTART + 0x100
-.include init.a18
+    org ROMSTART + 0100h
+    include init.a18
 
-GOSUB UARTINIT
-;GOSUB RTCINIT ; remove once RTC has battery
+;   GOSUB UARTINIT
+;   GOSUB RTCINIT
 
-ENABLE_INTERRUPTS
+    ENABLE_INTERRUPTS
 
 ; turn on receive flow control
-SETIO 0x00
-WRITEIO 0x11
+    SETIO 000h
+    WRITEIO 011h
 
-PRCRLF
-PRCRLF
+    PRCRLF
+    PRCRLF
 
-.include wozmon.a18
-
-.include GOSUB.a18
-.include UART.a18
-.include RTC.a18
-.include interrupt.a18
+;include wozmon.a18
+;include UART.a18
+;include RTC.a18
+;include interrupt.a18
 
 ENDBIOS:
-.include fib256.a18
+    include fib256.a18
 
 
 ENDROM:
-.align 0x100
+    align 0100h
 BUFFERS:
-.include buffers.a18
+    include buffers.a18
 
-
-.org 0x2000
-PRCRLF
-DISABLE_INTERRUPTS
-SETIO 0x18
-WRITEIO 0xC0
-SETIO 0x1E
-WRITEIO 0x08
-ENABLE_INTERRUPTS
-PRSTRINGCRLF "Clock 1hz Interrupt Enabled"
-RTCALARMLOOP:
-DISABLE_INTERRUPTS
-DEC_R STACK
-SETIO 0x1E
-READIO
-ANI 0x07
-PLO_R USERREG5
-INC_R STACK
-PRBYTE
-PRCRLF
-ENABLE_INTERRUPTS
-GLO_R USERREG5
-;debug here, not the same as value from READIO above
-LBNZ RTCALARM
-LBZ RTCNOALARM
-RTCALARM:
-PRSTRINGCRLF "Alarm"
-DISABLE_INTERRUPTS
-SETIO 0x1E
-WRITEIO 0x08
-ENABLE_INTERRUPTS
-RTCNOALARM:
-INC_R STACK
-GOSUB LONGDELAY
-LBR RTCALARMLOOP
-
-.org 0x2200
-SETIO 0x18
-WRITEIO 0x00
-PRSTRINGCRLF "Clock Interrupt Disabled"
-LBR NEWLINE
 
 
 

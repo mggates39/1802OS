@@ -47,67 +47,67 @@ PRCHAR_SUB:
 PRCHAR_WAIT:
 SEQ
 LOADREGLDN UARTSENDBUFFERHEAD, SCRATCHREG  ; D = head
-DEC_R STACK
-STR_R STACK                                 ; push head
+DEC STACK
+STR STACK                                 ; push head
 LOADREGLDN UARTSENDBUFFERTAIL, SCRATCHREG  ; D = tail
 SD                                          ; D = head - tail = bytes used
-INC_R STACK
+INC STACK
 SMI 0xFF                                    ; DF=1 if full (255 bytes used)
 LBDF PRCHAR_WAIT
 REQ
 DISABLE_INTERRUPTS
 LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
 LDI >UARTOUTBUFFER
-PHI_R UARTREG
-LDN_R SCRATCHREG
-PLO_R UARTREG
-INC_R STACK
-LDN_R STACK ; get byte to print off stack
-STR_R UARTREG ; store to head of buffer
-INC_R UARTREG ; in head pointer
-GLO_R UARTREG 
-STR_R SCRATCHREG ; write head pointer to memory
+PHI UARTREG
+LDN SCRATCHREG
+PLO UARTREG
+INC STACK
+LDN STACK ; get byte to print off stack
+STR UARTREG ; store to head of buffer
+INC UARTREG ; in head pointer
+GLO UARTREG 
+STR SCRATCHREG ; write head pointer to memory
 ; enable UART send interrupt
 SETIO 0x01
 INP 110b ; status byte in D
 ORI 0x02 ; make sure transmit buffer int bit is on
-STR_R STACK ; push new status byte to stack
+STR STACK ; push new status byte to stack
 OUT 100b ; write 
-DEC_R STACK ; restore stack pointer
+DEC STACK ; restore stack pointer
 ENABLE_INTERRUPTS
 RETSUB
 
 PRBYTE_SUB:
 LDI >HEXTABLE
-PHI_R SCRATCHREG
-INC_R STACK
-LDN_R STACK
+PHI SCRATCHREG
+INC STACK
+LDN STACK
 SHR
 SHR
 SHR
 SHR
 ADI <HEXTABLE ; hex char table offset by 0xF0
-PLO_R SCRATCHREG
-LDN_R SCRATCHREG
-DEC_R STACK
-STR_R STACK
-DEC_R STACK
+PLO SCRATCHREG
+LDN SCRATCHREG
+DEC STACK
+STR STACK
+DEC STACK
 GOSUB PRCHAR_SUB
 LDI >HEXTABLE
-PHI_R SCRATCHREG
-INC_R STACK
-LDN_R STACK
+PHI SCRATCHREG
+INC STACK
+LDN STACK
 ANI 0x0F ; AND not ADD
 ADI <HEXTABLE ; hex char table offset by 0xF0
-PLO_R SCRATCHREG
-LDN_R SCRATCHREG
-STR_R STACK
-DEC_R STACK
+PLO SCRATCHREG
+LDN SCRATCHREG
+STR STACK
+DEC STACK
 GOSUB PRCHAR_SUB
 RETSUB
 
 PRSTR:
-LDA_R ARGUMENTS
+LDA ARGUMENTS
 LBZ ENDPRSTR
 PRCHAR
 LBR PRSTR
