@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/opt/asl-bld306/bin/asl -cpu 1802 $1.a18 -L && /opt/asl-bld306/bin/p2hex -F Intel $1.p $1.hex
