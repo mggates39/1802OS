@@ -57,7 +57,7 @@ UARTINIT:
     REQ
     DISABLE_INTERRUPTS
     LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
-    LDI UARTOUTBUFFER >> 8
+    LDI (UARTOUTBUFFER >> 8)
     PHI UARTREG
     LDN SCRATCHREG
     PLO UARTREG
@@ -78,7 +78,7 @@ UARTINIT:
     RETSUB
 
 PRBYTE_SUB:
-    LDI HEXTABLE >> 8
+    LDI (HEXTABLE >> 8)
     PHI SCRATCHREG
     INC STACK
     LDN STACK
@@ -86,19 +86,19 @@ PRBYTE_SUB:
     SHR
     SHR
     SHR
-    ADI HEXTABLE & 0ffh ; hex char table offset by 0xF0
+    ADI (HEXTABLE & 0ffh) ; hex char table offset by 0xF0
     PLO SCRATCHREG
     LDN SCRATCHREG
     DEC STACK
     STR STACK
     DEC STACK
     GOSUB PRCHAR_SUB
-    LDI HEXTABLE & 0ffh
+    LDI (HEXTABLE >> 8)
     PHI SCRATCHREG
     INC STACK
     LDN STACK
     ANI 0Fh ; AND not ADD
-    ADI HEXTABLE & 0ffh ; hex char table offset by 0xF0
+    ADI (HEXTABLE & 0ffh) ; hex char table offset by 0xF0
     PLO SCRATCHREG
     LDN SCRATCHREG
     STR STACK

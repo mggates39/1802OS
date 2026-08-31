@@ -7,24 +7,24 @@ CLEARREG    macro REG ; REG set to 0000H
     endm
 
 LOADREG    macro ADDR, REG ; ADDRESS, REG
-    LDI ADDR >> 8
+    LDI (ADDR >> 8)
     PHI REG
-    LDI ADDR & 0ffh
+    LDI (ADDR & 0ffh)
     PLO REG
     endm
 
 LOADREGLDN     macro ADDR, REG; ADDRESS, REG
-    LDI ADDR >> 8
+    LDI (ADDR >> 8)
     PHI REG
-    LDI ADDR & 0ffh
+    LDI (ADDR & 0ffh)
     PLO REG
     LDN REG
     endm 
 
 LOADREGCLR     macro ADDR, REG ; ADDRESS, REG
-    LDI ADDR >> 8
+    LDI (ADDR >> 8)
     PHI REG
-    LDI ADDR & 0ffh
+    LDI (ADDR & 0ffh)
     PLO REG
     LDI 00h
     STR REG
@@ -73,9 +73,9 @@ PRBYTE  macro
 
 ; print word in argument
 PRWORD  macro ARG
-    LDI ARG >> 8
+    LDI (ARG >> 8)
     PRBYTE
-    LDI ARG & 0ffh
+    LDI (ARG & 0ffh)
     PRBYTE
     endm
 
@@ -104,9 +104,9 @@ PRSTRINGCRLF    macro STR
 ;claude authored interrupt enable/disable
 
 DISABLE_INTERRUPTS  macro
-    LDI XPSAVE >> 8
+    LDI (XPSAVE >> 8)
     PHI SCRATCHREG
-    LDI XPSAVE & 0ffh
+    LDI (XPSAVE & 0ffh)
     PLO SCRATCHREG
     SEX SCRATCHREG
     DIS              ; IE <- 0, X,P reloaded unchanged, R(SCRATCHREG)+1
@@ -114,9 +114,9 @@ DISABLE_INTERRUPTS  macro
     endm
 
 ENABLE_INTERRUPTS   macro
-    LDI XPSAVE >> 8
+    LDI (XPSAVE >> 8)
     PHI SCRATCHREG
-    LDI XPSAVE & 0ffh
+    LDI (XPSAVE & 0ffh)
     PLO SCRATCHREG
     SEX SCRATCHREG
     RET              ; IE <- 1, X,P reloaded unchanged, R(SCRATCHREG)+1
@@ -148,17 +148,18 @@ SETCARRY    macro
     SHR
     endm
 
+
 ; for wozmon, jump execution to this address
-JUMPEXECUTE macro TARG
-    LDI TMPJMPM >> 8
+JUMPEXECUTE macro TARGET
+    LDI (TMPJMPM >> 8)
     PHI ARGUMENTS
-    LDI TMPJMPM & 0FFh
+    LDI (TMPJMPM & 0FFh)
     PLO ARGUMENTS
     SEP ARGUMENTS
 TMPJMPM: 
-    GHI TARG
+    GHI TARGET
     PHI PC
-    GLO TARG
+    GLO TARGET
     PLO PC
     SEP PC
     endm    
@@ -206,6 +207,36 @@ biglshift    macro LOC
     endm
 
 ;
+;   GOSUB Support Macros
+;
+GOSUB   macro ADDR
+;preserves D for use in subroutine
+    DEC STACK
+    STR STACK
+    LDI (CALL) >> 8
+    PHI GOSUBREG
+    LDI (CALL) & 0ffh
+    PLO GOSUBREG
+    LDN STACK
+    INC STACK
+    SEP GOSUBREG
+    dw ADDR
+    endm
+
+RETSUB  macro
+;preserves D for return value from subroutine
+    DEC STACK
+    STR STACK
+    LDI (RETURN) >> 8
+    PHI GOSUBREG
+    LDI (RETURN) & 0ffh
+    PLO GOSUBREG
+    LDN STACK
+    INC STACK
+    SEP GOSUBREG
+    endm
+
+;
 ; RTC support Macros
 ;
 GETCLOCK    macro BUF
@@ -216,5 +247,12 @@ GETCLOCK    macro BUF
 DISPLAYCLOCK    macro DISPTIME
     GOSUB DISPCLOCK
     dw DISPTIME
+    endm
+
+CLOCKDIGITDISP  macro REG, STR
+    LDN REG
+    PRBYTE    
+    PRSTRING STR
+    INC REG
     endm
 

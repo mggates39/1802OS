@@ -1,4 +1,4 @@
-BEGINNING equ 0000h
+BEGINNING equ 4000h
     org BEGINNING
 ; for debuggin, 1 to disable delays/memory wipe
 NODELAYS = 0
@@ -10,14 +10,17 @@ SKIPMEMORY = 0
     include macros.a18
 
     org ROMSTART + 0100h
-    include init.a18
 
-    include GOSUB.a18
+    include init.a18
 
     GOSUB UARTINIT
     GOSUB RTCINIT
 
     ENABLE_INTERRUPTS
+
+; turn on clock interrupts
+    SETIO 01Eh
+    WRITEIO 010h
 
 ; turn on receive flow control
     SETIO 000h
@@ -27,19 +30,18 @@ SKIPMEMORY = 0
     PRCRLF
 
     include wozmon.a18
+
+    include GOSUB.a18
     include UART.a18
     include RTC.a18
     include interrupt.a18
 
 ENDBIOS:
- 
+    include fib256.a18
+
 
 ENDROM:
     align 0100h
 BUFFERS:
     include buffers.a18
-
-
-   include fib256.a18
-
 

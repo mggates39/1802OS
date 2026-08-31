@@ -15,8 +15,8 @@ NEWLINE:
     DISPLAYCLOCK TIMERSTART
     PRCRLF
     PRSTRING "End:   "
-;GETCLOCK TIME
-    DISPLAYCLOCK TIME
+;GETCLOCK TIMEBASE
+    DISPLAYCLOCK TIMEBASE
     PRCRLF
 
 
@@ -26,14 +26,14 @@ SKIPTIMERDISPLAY:
     LDI ']'
     PRCHAR
     LDI 00h
-    PHI WOZREG
-    PLO WOZREG
-    PHI WOZREG2
-    PLO WOZREG2
-    PHI TARGETREG
-    PLO TARGETREG
-    PHI TARGETREG2
-    PLO TARGETREG2
+    PHI  WOZREG
+    PLO  WOZREG
+    PHI  WOZREG2
+    PLO  WOZREG2
+    PHI  TARGETREG
+    PLO  TARGETREG
+    PHI  TARGETREG2
+    PLO  TARGETREG2
 
 ; WOZREG points to Line buffer
     LOADREG WOZMONLINE, WOZREG 
@@ -43,118 +43,124 @@ SKIPTIMERDISPLAY:
 
 INPUTLOOP:
 
-    LDN WOZREG2
+    LDN  WOZREG2
     BZ INPUTLOOP
 
-    LDI (UARTINBUFFER) >> 8 ;targetreg points to buffer tail
-    PHI TARGETREG
+    LDI (UARTINBUFFER >> 8) ;targetreg points to buffer tail
+    PHI  TARGETREG
     LOADREGLDN UARTRECVBUFFERTAIL, TARGETREG2
-    PLO TARGETREG ; target reg holds buffer tail pointPRBYTE
+    PLO  TARGETREG ; target reg holds buffer tail pointPRBYTE
 
-    LDN TARGETREG  
-    STR WOZREG
+    LDN  TARGETREG  
+    STR  WOZREG
     PRCHAR
-    INC TARGETREG
-    GLO TARGETREG
-    STR TARGETREG2 ; incremented tail byte
+    INC  TARGETREG
+    GLO  TARGETREG
+    STR  TARGETREG2 ; incremented tail byte
 
     DISABLE_INTERRUPTS ; protect receiveflag
-    LDN WOZREG2
+    LDN  WOZREG2
     SMI 01h
-    STR WOZREG2 ; decremented receive flag/counter
+    STR  WOZREG2 ; decremented receive flag/counter
     ENABLE_INTERRUPTS
 
 ; check if we need to send xon and skip/send
-    LDN WOZREG2
+    LDN  WOZREG2
     SMI 010h
-    LBDF SKIPSENDXON
+    BDF SKIPSENDXON
     LOADREGLDN FLOWCONTROL, SCRATCHREG
-    LBZ SKIPSENDXON
+    BZ SKIPSENDXON
     LDI 011h
     PRCHAR
     LOADREG FLOWCONTROL, SCRATCHREG
     LDI 00h
-    STR SCRATCHREG
+    STR  SCRATCHREG
 SKIPSENDXON:
 
-    LDN WOZREG
+    LDN  WOZREG
     SDI 08h
     LBZ BACKSPACE
-    LDN WOZREG
-    SDI 07fh
+    LDN  WOZREG
+    SDI 07Fh
     LBZ BACKSPACE
-    LDN WOZREG
-    INC WOZREG
+    LDN  WOZREG
+    INC  WOZREG
     SMI 13 ; if it is enter, finish line
     BZ ENDLINE
-    DEC WOZREG
-    LDN WOZREG
-    INC WOZREG
+    DEC  WOZREG
+    LDN  WOZREG
+    INC  WOZREG
     SMI 10 ; if it is linefeed, finish line
     BZ ENDLINE
 
-    GLO WOZREG
-    SDI (WOZMONLINE & 0ffh) + 79 ; if over 79 bytes, end input
+    GLO  WOZREG
+    SDI ((WOZMONLINE >> 8) + 79) ; if over 79 bytes, end input
     BZ ENDLINE
     LBR INPUTLOOP
 
 ENDLINE: ; 1 extra CR wont hurt anyone
     LDI 013h
-    STR WOZREG
+    STR  WOZREG
 
 ; start timer
     GETCLOCK TIMERSTART
 
     LOADREG WOZMONLINE, WOZREG ; reset wozmonline pointer
     LDI 00h
-    PLO TARGETREG
-    PHI TARGETREG
-    PLO TARGETREG2
-    PHI TARGETREG2
+    PLO  TARGETREG
+    PHI  TARGETREG
+    PLO  TARGETREG2
+    PHI  TARGETREG2
 
 LOOP:
-    LDN WOZREG
+    LDN  WOZREG
     LBZ END
     SDI '='
     LBZ BEFOREEQUAL
-    LDN WOZREG
+    LDN  WOZREG
     SDI '.'
     LBZ PERIOD
-    LDN WOZREG
+    LDN  WOZREG
     SDI 13 ; enter
     LBZ SINGLEDISPLAY ; ENTER?
-    LDN WOZREG
+    LDN  WOZREG
     SDI 'G'
     LBZ EXECUTE
-    LDN WOZREG
+    LDN  WOZREG
     SDI 'g'
     LBZ EXECUTE
-    LDN WOZREG
+    LDN  WOZREG
     SDI ':'
     LBZ HEXLOADER
-    LDN WOZREG
+    LDN  WOZREG
     SDI 'R'
     LBZ RIO
-    LDN WOZREG
+    LDN  WOZREG
+    SDI 'r'
+    LBZ RIO
+    LDN  WOZREG
     SDI 'W'
     LBZ WIO
-    LDN WOZREG
+    LDN  WOZREG
+    SDI 'w'
+    LBZ WIO
+    LDN  WOZREG
     SDI '?'
     LBZ HELPMENU
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ digit
-    LDN WOZREG
+    LDN  WOZREG
     XRI 040h
-    ANI 0d8h
+    ANI 0D8h
     LBNZ NOTHEX
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH
-    DIGIT:
-    LDN WOZREG
+    BR BOTH
+DIGIT:
+    LDN  WOZREG
     ANI 0Fh
 BOTH:
     SHL
@@ -162,18 +168,18 @@ BOTH:
     SHL
     SHL
     biglshift TARGETREG
-    INC WOZREG
+    INC  WOZREG
     LBR LOOP
 
 BACKSPACE:
-    GLO WOZREG
-    XRI WOZMONLINE & 0ffh
+    GLO  WOZREG
+    XRI (WOZMONLINE & 0ffh)
     LBZ REDRAWPROMPT ; ignore keypress if first character
     LDI ' '
     PRCHAR
     LDI 08h
     PRCHAR
-    DEC WOZREG
+    DEC  WOZREG
     LBR INPUTLOOP
 
 REDRAWPROMPT:
@@ -181,28 +187,29 @@ REDRAWPROMPT:
     PRCHAR
     LBR INPUTLOOP
 
+
 EXECUTE:
     JUMPEXECUTE TARGETREG ; no coming back from this
 
 PERIOD:
-    INC WOZREG
-    LDN WOZREG
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13
     LBZ DISPLAY ; ENTER?
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ digit2
-    LDN WOZREG
+    BZ digit2
+    LDN  WOZREG
     XRI 040h
-    ANI 0d8h
+    ANI 0D8h
     LBNZ NOTHEX
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH2
-    DIGIT2:
-    LDN WOZREG
+    BR BOTH2
+DIGIT2:
+    LDN  WOZREG
     ANI 0Fh
 BOTH2:
     SHL
@@ -213,150 +220,154 @@ BOTH2:
     LBR PERIOD
 
 BEFOREEQUAL:
+; do not overwrite address 0
+    GHI  TARGETREG
+    BNZ CONTINUEEQUAL
+    GLO  TARGETREG
+    LBZ NEWLINE
+
+CONTINUEEQUAL:
     LOADREG WOZWRITEHIGH, SCRATCHREG
-    GHI TARGETREG
-    STR SCRATCHREG
+    GHI  TARGETREG
+    STR  SCRATCHREG
     LOADREG WOZWRITELOW, SCRATCHREG
-    GLO TARGETREG
-    STR SCRATCHREG
+    GLO  TARGETREG
+    STR  SCRATCHREG
 EQUAL:
     LDI 00h
-    STR TARGETREG ; target byte is now 0
+    STR  TARGETREG ; target byte is now 0
 EQUALLOOP:
-    INC WOZREG
-    LDN WOZREG
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13
     LBZ WRITEDISPLAY ; ENTER?
-    LDN WOZREG
+    LDN  WOZREG
     SDI ' '
     LBZ SPACE
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ digit3
-    LDN WOZREG
+    LDN  WOZREG
     XRI 040h
-    ANI 0d8h
+    ANI 0D8h
     LBNZ EQUALLOOP
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH3
+    BR BOTH3
 DIGIT3:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH3:
-    DEC STACK
-    STR STACK
-    LDN TARGETREG
+    DEC  STACK
+    STR  STACK
+    LDN  TARGETREG
     SHL
     SHL
     SHL
     SHL
     ADD
-    STR TARGETREG
-    INC STACK
+    STR  TARGETREG
+    INC  STACK
     LBR EQUALLOOP
 
 SPACE: 
-    INC TARGETREG
+    INC  TARGETREG
     LBR EQUAL
 
 
 WRITEDISPLAY:
 ; set targetend to last byte modified
-    GHI TARGETREG
-    PHI TARGETREG2
-    GLO TARGETREG
-    PLO TARGETREG2
+    GHI  TARGETREG
+    PHI  TARGETREG2
+    GLO  TARGETREG
+    PLO  TARGETREG2
 
 ;restore original target address
     LOADREGLDN WOZWRITEHIGH, SCRATCHREG
-    PHI TARGETREG
+    PHI  TARGETREG
     LOADREGLDN WOZWRITELOW, SCRATCHREG
-    PLO TARGETREG
+    PLO  TARGETREG
     LBR DISPLAY
 
 ; display code here
 SINGLEDISPLAY:
-    GHI TARGETREG
-    PHI TARGETREG2
-    GLO TARGETREG
-    PLO TARGETREG2
+    GHI  TARGETREG
+    PHI  TARGETREG2
+    GLO  TARGETREG
+    PLO  TARGETREG2
 DISPLAY:
-    GHI TARGETREG
-    PHI WOZREG2
-    GLO TARGETREG
-    PLO WOZREG2
+    GHI  TARGETREG
+    PHI  WOZREG2
+    GLO  TARGETREG
+    PLO  WOZREG2
     PRCRLF
-    GHI TARGETREG
+    GHI  TARGETREG
     PRBYTE
-    GLO TARGETREG
+    GLO  TARGETREG
     PRBYTE
     LDI '='
     PRCHAR
     EACHBYTE:
-    LDN TARGETREG
+    LDN  TARGETREG
     PRBYTE
     LDI ' '
     PRCHAR
 
-    DEC STACK
-    GHI TARGETREG2
-    STR STACK
-    GHI TARGETREG
+    DEC  STACK
+    GHI  TARGETREG2
+    STR  STACK
+    GHI  TARGETREG
     SD 
-    INC STACK
-    LBNZ NOTEQUAL
-    DEC STACK
-    GLO TARGETREG2
-    STR STACK
-    GLO TARGETREG
+    INC  STACK
+    BNZ NOTEQUAL
+    DEC  STACK
+    GLO  TARGETREG2
+    STR  STACK
+    GLO  TARGETREG
     SD
-    INC STACK
-    LBZ BYTES
+    INC  STACK
+    BZ BYTES
 
 NOTEQUAL:
-    INC TARGETREG
-    GLO TARGETREG
+    INC  TARGETREG
+    GLO  TARGETREG
 ; 0x7 for 8 bytes, 0xF for 16 bytes, 0x1F for 32 bytes
     ANI 0Fh
-    LBNZ EACHBYTE
+    BNZ EACHBYTE
 
 BYTES:
     PRSTRING "  "
-    EACHCHAR:
-    LDN WOZREG2
+EACHCHAR:
+    LDN  WOZREG2
     SMI 020h
     LBNF INVALIDCHAR
-    LDN WOZREG2
-    SMI 07fh
-    LBDF INVALIDCHAR
-    LDN WOZREG2
+    LDN  WOZREG2
     LSKP
 INVALIDCHAR:
     LDI '.'
     PRCHAR
 
-    DEC STACK
-    GHI TARGETREG2
-    STR STACK
-    GHI WOZREG2
+    DEC  STACK
+    GHI  TARGETREG2
+    STR  STACK
+    GHI  WOZREG2
     SD 
-    INC STACK
+    INC  STACK
     LBNZ NOTEQUAL2
 
-    DEC STACK
-    GLO TARGETREG2
-    STR STACK
-    GLO WOZREG2
+    DEC  STACK
+    GLO  TARGETREG2
+    STR  STACK
+    GLO  WOZREG2
     SD
-    INC STACK
+    INC  STACK
     LBZ NEWLINE
 
 NOTEQUAL2:
-    INC WOZREG2
-    GLO WOZREG2
+    INC  WOZREG2
+    GLO  WOZREG2
     ANI 0Fh
     LBNZ EACHCHAR
 
@@ -407,80 +418,80 @@ HEXLOADER:
 ; WOZREG2 is loop counter for reading nibbles & byte to save
 ; TARGETREG is address to be written
 ; TARGETREG2 is count of bytes
-    LDI 00h 
-    PLO TARGETREG2
-    PHI TARGETREG2
-    PLO TARGETREG
-    PHI TARGETREG
-    PLO WOZREG2
-    PHI WOZREG2
+    LDI 00h
+    PLO  TARGETREG2
+    PHI  TARGETREG2
+    PLO  TARGETREG
+    PHI  TARGETREG
+    PLO  WOZREG2
+    PHI  WOZREG2
 
 ; number of bytes
-    INC WOZREG
-    LDN WOZREG
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ DIGIT4
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH4
+    BR BOTH4
 DIGIT4:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH4:
     SHL
     SHL
     SHL
     SHL
-    PLO TARGETREG2
-    INC WOZREG
-    LDN WOZREG
+    PLO  TARGETREG2
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
-    ANI 0f0h
+    ANI 0F0h
     LBZ DIGIT5
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
     LBR BOTH5
 DIGIT5:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH5:
-    DEC STACK
-    STR STACK
-    GLO TARGETREG2
+    DEC  STACK
+    STR  STACK
+    GLO  TARGETREG2
     ADD
-    PLO TARGETREG2
-    INC STACK
-    GLO TARGETREG2
+    PLO  TARGETREG2
+    INC  STACK
+    GLO  TARGETREG2
     LBZ END
 ; end number of bytes
 
 ; target address
     LDI 04h
-    PLO WOZREG2
+    PLO  WOZREG2
 TARGET:
-    INC WOZREG
-    LDN WOZREG
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13
     LBZ END ; unexpected ENTER abort
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ DIGIT6
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
     LBR BOTH6
 DIGIT6:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH6:
     SHL
@@ -488,86 +499,86 @@ BOTH6:
     SHL
     SHL
     biglshift TARGETREG
-    DEC WOZREG2
-    GLO WOZREG2
+    DEC  WOZREG2
+    GLO  WOZREG2
     LBNZ TARGET ; not 4 nibbles, loop
 ; done target address
 
-    INC WOZREG ; skip two bytes of 'type'
-    INC WOZREG
+    INC  WOZREG ; skip two bytes of 'type'
+    INC  WOZREG
 
 ;loop to eat bytes
-    EATBYTES:
-    INC WOZREG
-    LDN WOZREG
+EATBYTES:
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
+    LDN  WOZREG
     SDI 10 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ DIGIT7
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
     LBR BOTH7
 DIGIT7:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH7:
     SHL
     SHL
     SHL
     SHL
-    PLO WOZREG2
-    INC WOZREG
-    LDN WOZREG
+    PLO  WOZREG2
+    INC  WOZREG
+    LDN  WOZREG
     SDI 13 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
-    SDI 10 ; linefeed
+    LDN  WOZREG
+    SDI 10 ; enter
     LBZ END ; unexpected ENTER? abort
-    LDN WOZREG
+    LDN  WOZREG
     XRI 030h
     ANI 0F0h
     LBZ DIGIT8
-    LDN WOZREG
+    LDN  WOZREG
     ANI 07h
     ADI 09h
     LBR BOTH8
 DIGIT8:
-    LDN WOZREG
+    LDN  WOZREG
     ANI 0Fh
 BOTH8:
-    DEC STACK
-    STR STACK
-    GLO WOZREG2
+    DEC  STACK
+    STR  STACK
+    GLO  WOZREG2
     ADD
-    PLO WOZREG2
-    INC STACK
-    STR TARGETREG
-    INC TARGETREG
-    DEC TARGETREG2
-    GLO TARGETREG2
-    LBNZ EATBYTES
+    PLO  WOZREG2
+    INC  STACK
+    STR  TARGETREG
+    INC  TARGETREG
+    DEC  TARGETREG2
+    GLO  TARGETREG2
+    BNZ EATBYTES
     LBR END
 
 RIO:
     PRCRLF
     DISABLE_INTERRUPTS
-    GLO TARGETREG
-    DEC STACK
-    STR STACK
+    GLO  TARGETREG
+    DEC  STACK
+    STR  STACK
     OUT 001b ;increments STACK, sets IO port
-    DEC STACK
+    DEC  STACK
     INP 110b ; reads IO byte
-    INC STACK
+    INC  STACK
     PRBYTE
     ENABLE_INTERRUPTS
     PRSTRING " was read from device "
-    GLO TARGETREG
+    GLO  TARGETREG
     ANI 0F0h
     SHR
     SHR
@@ -575,7 +586,7 @@ RIO:
     SHR
     PRBYTE
     PRSTRING ", port "
-    GLO TARGETREG
+    GLO  TARGETREG
     ANI 0Fh
     PRBYTE
     PRCRLF
@@ -585,19 +596,19 @@ RIO:
 WIO:
     PRCRLF
     DISABLE_INTERRUPTS
-    GHI TARGETREG
-    DEC STACK
-    STR STACK
+    GHI  TARGETREG
+    DEC  STACK
+    STR  STACK
     OUT 001b ;increments STACK sets IO port
-    GLO TARGETREG
-    DEC STACK
-    STR STACK
+    GLO  TARGETREG
+    DEC  STACK
+    STR  STACK
     OUT 100b ; increaments STACK, writes IO byte
     ENABLE_INTERRUPTS
-    GLO TARGETREG
+    GLO  TARGETREG
     PRBYTE
     PRSTRING " was written to device "
-    GHI TARGETREG
+    GHI  TARGETREG
     ANI 0F0h
     SHR
     SHR
@@ -605,7 +616,7 @@ WIO:
     SHR
     PRBYTE
     PRSTRING ", port "
-    GHI TARGETREG
+    GHI  TARGETREG
     ANI 0Fh
     PRBYTE
     PRCRLF

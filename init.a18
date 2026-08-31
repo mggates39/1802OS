@@ -10,10 +10,10 @@ INITSYSTEM:
 
 ; clear user ram
     if SKIPMEMORY = 0
-    LDI (ENDROM) >> 8 ; >ENDROM
+    LDI (ENDROM >> 8) ; >ENDROM
     PHI USERREG0
 ; clear RAM as C4 (nop) loop
-    LDI (ENDROM) & 0ffh
+    LDI (ENDROM & 0ffh)
     PLO USERREG0
 CLEARRAMLOOP:
     LDI 00h
@@ -50,7 +50,7 @@ WARMBOOT:
 ; clear OSMEM 16 bytes
 ; clear ram at 8000h - FFFFh
 
-    LOADREG OSMEM+1, USERREG1
+    LOADREG (OSMEM+1), USERREG1
     LDI 01Fh
     PLO USERREG0
 OSMEMINIT:

@@ -1,6 +1,6 @@
 ; Interrupt Handler
 ; Loops back to beginning address to restore R(1)
-    INTEND: 
+INTEND: 
     INC STACK 
     LDA STACK
     SHR
@@ -26,7 +26,7 @@ INTERRUPTHANDLER:
     LBNZ CHECKRTC
     LDN STACK
     ANI 0Eh ; mask interrupt ID
-    SMI 02h ; RX
+    SMI 02h ; TX
     LBZ HANDLETX
     LDN STACK
     ANI 0Eh ; mask interrupt ID
@@ -59,7 +59,7 @@ SKIPXOFF:
 ; tail ptr already in INTERRUPTREG2 from 0 byte check
     LDN INTERRUPTREG2 ; get tail pointer value
     PLO INTERRUPTREG ; push in to reg
-    LDI UARTOUTBUFFER >> 8
+    LDI (UARTOUTBUFFER >> 8)
     PHI INTERRUPTREG
     SETIO 00h; UART data port
     SEX INTERRUPTREG
@@ -87,7 +87,7 @@ STOPTRANSMITINTERRUPTS:
 
 HANDLERX:
     LOADREG UARTRECVBUFFERHEAD, INTERRUPTREG
-    LDI UARTINBUFFER >> 8 ; pointer to buffer start
+    LDI (UARTINBUFFER >> 8) ; pointer to buffer start
     PHI INTERRUPTREG2 
     LDN INTERRUPTREG ; pointer to head value
     PLO INTERRUPTREG2 
@@ -168,16 +168,16 @@ HARDBOOT:
     SEP PC
 
 REBOOT:
-    LDI INITSYSTEM >> 8
+    LDI (INITSYSTEM >> 8)
     PHI PC
-    LDI INITSYSTEM & 0ffh
+    LDI (INITSYSTEM & 0ffh)
     PLO PC
     SEP PC
 
 WARMBOOTJMP:
-    LDI WARMBOOT >> 8
+    LDI (WARMBOOT >> 8)
     PHI PC
-    LDI WARMBOOT & 0ffh
+    LDI (WARMBOOT & 0ffh)
     PLO PC
     SEP PC
 
