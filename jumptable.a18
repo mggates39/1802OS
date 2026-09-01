@@ -47,5 +47,5 @@ HEXTABLE: db "0123456789ABCDEF"
 ; 64 bytes for the wozmon input line buffer
 ; wozmon buffer has no overflow protection
     align 010h
-WOZMONLINE: db 64 dup 00h
+WOZMONLINE: db 00h
 
