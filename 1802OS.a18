@@ -19,12 +19,12 @@ SKIPMEMORY = 0
     ENABLE_INTERRUPTS
 
 ; turn on clock interrupts
-    SETIO 01Eh
-    WRITEIO 010h
+    SETIO 1Eh
+    WRITEIO 10h
 
 ; turn on receive flow control
-    SETIO 000h
-    WRITEIO 011h
+    SETIO 00h
+    WRITEIO 11h
 
     PRCRLF
     PRCRLF
