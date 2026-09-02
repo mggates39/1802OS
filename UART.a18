@@ -3,7 +3,7 @@ UARTINIT:
 
 ; LCR to 10000000
     SETIO 03h
-    WRITEIO 080h
+    WRITEIO 80h
 
 ; Divisor latch 
 ; 0x000C for 9600 @ 1.8432mHz

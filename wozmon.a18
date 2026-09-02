@@ -375,7 +375,10 @@ NOTEQUAL2:
 
 HELPMENU:
     PRCRLF
-    PRSTRINGCRLF "COSMAC ELF/J1802 - JMON HELP"
+    PRSTRING "COSMAC ELF/J1802 - JMON HELP - COMPILED "
+	PRSTRING DATE
+	PRSTRING " "
+	PRSTRINGCRLF TIME
     PRSTRINGCRLF "=================================================================="
     PRSTRINGCRLF "Any missing arguments are assumed to be 0"
     PRCRLF

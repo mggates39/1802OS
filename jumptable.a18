@@ -8,7 +8,7 @@ CLOCKLOOPDISPLAY:
 FIB256DISPLAY:
     LBR FIB256START
 
-    org BEGINNING + 070h
+	org BEGINNING + 70h
 ; 16 bytes for timer start/stop
 TIMEBASE:
 TIME_YR: db 00h
