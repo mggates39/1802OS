@@ -98,7 +98,7 @@ HANDLERX:
     LBZ WARMBOOTJMP
     SMI 017h ; check if ctrl-Z
     LBZ REBOOT
-    SMI 02h ; check if ctrl-\
+    SMI 02h ; check if ctrl-backslash
     LBZ HARDBOOT
     LDN STACK
     INC STACK
