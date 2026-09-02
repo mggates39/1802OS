@@ -53,7 +53,7 @@ PRCHAR_WAIT:
     SD                                          ; D = head - tail = bytes used
     INC STACK
     SMI 0ffh                                    ; DF=1 if full (255 bytes used)
-    BDF PRCHAR_WAIT
+    JDF PRCHAR_WAIT
     REQ
     DISABLE_INTERRUPTS
     LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
@@ -108,9 +108,9 @@ PRBYTE_SUB:
 
 PRSTR:
     LDA ARGUMENTS
-    BZ ENDPRSTR
+    JZ ENDPRSTR
     PRCHAR
-    BR PRSTR
+    JMP PRSTR
 ENDPRSTR:
     RETSUB
 

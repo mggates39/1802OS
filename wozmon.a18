@@ -44,7 +44,7 @@ SKIPTIMERDISPLAY:
 INPUTLOOP:
 
     LDN  WOZREG2
-    BZ INPUTLOOP
+    JZ INPUTLOOP
 
     LDI (UARTINBUFFER >> 8) ;targetreg points to buffer tail
     PHI  TARGETREG
@@ -69,7 +69,7 @@ INPUTLOOP:
     SMI 010h
     BDF SKIPSENDXON
     LOADREGLDN FLOWCONTROL, SCRATCHREG
-    BZ SKIPSENDXON
+    JZ SKIPSENDXON
     LDI 011h
     PRCHAR
     LOADREG FLOWCONTROL, SCRATCHREG
@@ -86,16 +86,16 @@ SKIPSENDXON:
     LDN  WOZREG
     INC  WOZREG
     SMI 13 ; if it is enter, finish line
-    BZ ENDLINE
+    JZ ENDLINE
     DEC  WOZREG
     LDN  WOZREG
     INC  WOZREG
     SMI 10 ; if it is linefeed, finish line
-    BZ ENDLINE
+    JZ ENDLINE
 
     GLO  WOZREG
     SDI ((WOZMONLINE >> 8) + 79) ; if over 79 bytes, end input
-    BZ ENDLINE
+    JZ ENDLINE
     JMP INPUTLOOP
 
 ENDLINE: ; 1 extra CR wont hurt anyone
@@ -158,7 +158,7 @@ LOOP:
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    BR BOTH
+    JMP BOTH
 DIGIT:
     LDN  WOZREG
     ANI 0Fh
@@ -199,7 +199,7 @@ PERIOD:
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    BZ digit2
+    JZ digit2
     LDN  WOZREG
     XRI 040h
     ANI 0D8h
@@ -207,7 +207,7 @@ PERIOD:
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    BR BOTH2
+    JMP BOTH2
 DIGIT2:
     LDN  WOZREG
     ANI 0Fh
@@ -222,7 +222,7 @@ BOTH2:
 BEFOREEQUAL:
 ; do not overwrite address 0
     GHI  TARGETREG
-    BNZ CONTINUEEQUAL
+    JNZ CONTINUEEQUAL
     GLO  TARGETREG
     JZ NEWLINE
 
@@ -255,7 +255,7 @@ EQUALLOOP:
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    BR BOTH3
+    JMP BOTH3
 DIGIT3:
     LDN  WOZREG
     ANI 0Fh
@@ -321,21 +321,21 @@ DISPLAY:
     GHI  TARGETREG
     SD 
     INC  STACK
-    BNZ NOTEQUAL
+    JNZ NOTEQUAL
     DEC  STACK
     GLO  TARGETREG2
     STR  STACK
     GLO  TARGETREG
     SD
     INC  STACK
-    BZ BYTES
+    JZ BYTES
 
 NOTEQUAL:
     INC  TARGETREG
     GLO  TARGETREG
 ; 0x7 for 8 bytes, 0xF for 16 bytes, 0x1F for 32 bytes
     ANI 0Fh
-    BNZ EACHBYTE
+    JNZ EACHBYTE
 
 BYTES:
     PRSTRING "  "
@@ -438,7 +438,7 @@ HEXLOADER:
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    BR BOTH4
+    JMP BOTH4
 DIGIT4:
     LDN  WOZREG
     ANI 0Fh
@@ -562,7 +562,7 @@ BOTH8:
     INC  TARGETREG
     DEC  TARGETREG2
     GLO  TARGETREG2
-    BNZ EATBYTES
+    JNZ EATBYTES
     JMP END
 
 RIO:
