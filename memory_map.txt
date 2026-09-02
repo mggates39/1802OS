@@ -3,6 +3,6 @@ THe system has 64K of memory
 thats it
 this is defined dynamically if the BIOS stuff grows, but currently
 0000-188A     - BIOS/ROM Image
-1C00-1CFF     - UART Transmit Buffer | 1D00-1DFF - UART Receive Buffer
-1E00-1E1F     - Sub Return Stack     | 1E20-1EFF - Stack
-1F00-FFFF     - User RAM
+1B00-1BFF     - UART Transmit Buffer | 1C00-1CFF - UART Receive Buffer
+1D00-1D1F     - Sub Return Stack     | 1D20-1DFF - Stack
+1E00-FFFF     - User RAM
