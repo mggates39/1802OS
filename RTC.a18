@@ -1,5 +1,5 @@
-;1E10W to enable IRqs
-;1E10W to disable IRQs
+; Enter 1E10W in the monitor to enable RTC IRQs
+; Enter 1E10W in the monitor to disable RTC IRQs
 
 
 RTCINIT:
