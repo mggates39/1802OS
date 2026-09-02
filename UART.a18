@@ -43,8 +43,8 @@ UARTINIT:
     RETSUB
 
 ; print a single character from D
-    PRCHAR_SUB:
-    PRCHAR_WAIT:
+PRCHAR_SUB:
+PRCHAR_WAIT:
     SEQ
     LOADREGLDN UARTSENDBUFFERHEAD, SCRATCHREG  ; D = head
     DEC STACK
@@ -53,7 +53,7 @@ UARTINIT:
     SD                                          ; D = head - tail = bytes used
     INC STACK
     SMI 0ffh                                    ; DF=1 if full (255 bytes used)
-    LBDF PRCHAR_WAIT
+    BDF PRCHAR_WAIT
     REQ
     DISABLE_INTERRUPTS
     LOADREG UARTSENDBUFFERHEAD, SCRATCHREG
@@ -108,9 +108,9 @@ PRBYTE_SUB:
 
 PRSTR:
     LDA ARGUMENTS
-    LBZ ENDPRSTR
+    BZ ENDPRSTR
     PRCHAR
-    LBR PRSTR
+    BR PRSTR
 ENDPRSTR:
     RETSUB
 
