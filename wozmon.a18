@@ -4,8 +4,8 @@ TARGETREG equ USERREG2 ; wozmon target
 TARGETREG2 equ USERREG3 ; wozmon :to target
 
 WOZMON:
-    LBR HELPMENU
-    LBR SKIPTIMERDISPLAY
+    JMP HELPMENU
+    JMP SKIPTIMERDISPLAY
 NEWLINE:
 ; end timer
 
@@ -79,10 +79,10 @@ SKIPSENDXON:
 
     LDN  WOZREG
     SDI 08h
-    LBZ BACKSPACE
+    JZ BACKSPACE
     LDN  WOZREG
     SDI 07Fh
-    LBZ BACKSPACE
+    JZ BACKSPACE
     LDN  WOZREG
     INC  WOZREG
     SMI 13 ; if it is enter, finish line
@@ -96,7 +96,7 @@ SKIPSENDXON:
     GLO  WOZREG
     SDI ((WOZMONLINE >> 8) + 79) ; if over 79 bytes, end input
     BZ ENDLINE
-    LBR INPUTLOOP
+    JMP INPUTLOOP
 
 ENDLINE: ; 1 extra CR wont hurt anyone
     LDI 013h
@@ -114,47 +114,47 @@ ENDLINE: ; 1 extra CR wont hurt anyone
 
 LOOP:
     LDN  WOZREG
-    LBZ END
+    JZ END
     SDI '='
-    LBZ BEFOREEQUAL
+    JZ BEFOREEQUAL
     LDN  WOZREG
     SDI '.'
-    LBZ PERIOD
+    JZ PERIOD
     LDN  WOZREG
     SDI 13 ; enter
-    LBZ SINGLEDISPLAY ; ENTER?
+    JZ SINGLEDISPLAY ; ENTER?
     LDN  WOZREG
     SDI 'G'
-    LBZ EXECUTE
+    JZ EXECUTE
     LDN  WOZREG
     SDI 'g'
-    LBZ EXECUTE
+    JZ EXECUTE
     LDN  WOZREG
     SDI ':'
-    LBZ HEXLOADER
+    JZ HEXLOADER
     LDN  WOZREG
     SDI 'R'
-    LBZ RIO
+    JZ RIO
     LDN  WOZREG
     SDI 'r'
-    LBZ RIO
+    JZ RIO
     LDN  WOZREG
     SDI 'W'
-    LBZ WIO
+    JZ WIO
     LDN  WOZREG
     SDI 'w'
-    LBZ WIO
+    JZ WIO
     LDN  WOZREG
     SDI '?'
-    LBZ HELPMENU
+    JZ HELPMENU
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ digit
+    JZ digit
     LDN  WOZREG
     XRI 040h
     ANI 0D8h
-    LBNZ NOTHEX
+    JNZ NOTHEX
     LDN  WOZREG
     ANI 07h
     ADI 09h
@@ -169,23 +169,23 @@ BOTH:
     SHL
     biglshift TARGETREG
     INC  WOZREG
-    LBR LOOP
+    JMP LOOP
 
 BACKSPACE:
     GLO  WOZREG
     XRI (WOZMONLINE & 0ffh)
-    LBZ REDRAWPROMPT ; ignore keypress if first character
+    JZ REDRAWPROMPT ; ignore keypress if first character
     LDI ' '
     PRCHAR
     LDI 08h
     PRCHAR
     DEC  WOZREG
-    LBR INPUTLOOP
+    JMP INPUTLOOP
 
 REDRAWPROMPT:
     LDI ']'
     PRCHAR
-    LBR INPUTLOOP
+    JMP INPUTLOOP
 
 
 EXECUTE:
@@ -195,7 +195,7 @@ PERIOD:
     INC  WOZREG
     LDN  WOZREG
     SDI 13
-    LBZ DISPLAY ; ENTER?
+    JZ DISPLAY ; ENTER?
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
@@ -203,7 +203,7 @@ PERIOD:
     LDN  WOZREG
     XRI 040h
     ANI 0D8h
-    LBNZ NOTHEX
+    JNZ NOTHEX
     LDN  WOZREG
     ANI 07h
     ADI 09h
@@ -217,14 +217,14 @@ BOTH2:
     SHL
     SHL
     biglshift TARGETREG2
-    LBR PERIOD
+    JMP PERIOD
 
 BEFOREEQUAL:
 ; do not overwrite address 0
     GHI  TARGETREG
     BNZ CONTINUEEQUAL
     GLO  TARGETREG
-    LBZ NEWLINE
+    JZ NEWLINE
 
 CONTINUEEQUAL:
     LOADREG WOZWRITEHIGH, SCRATCHREG
@@ -240,18 +240,18 @@ EQUALLOOP:
     INC  WOZREG
     LDN  WOZREG
     SDI 13
-    LBZ WRITEDISPLAY ; ENTER?
+    JZ WRITEDISPLAY ; ENTER?
     LDN  WOZREG
     SDI ' '
-    LBZ SPACE
+    JZ SPACE
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ digit3
+    JZ digit3
     LDN  WOZREG
     XRI 040h
     ANI 0D8h
-    LBNZ EQUALLOOP
+    JNZ EQUALLOOP
     LDN  WOZREG
     ANI 07h
     ADI 09h
@@ -270,11 +270,11 @@ BOTH3:
     ADD
     STR  TARGETREG
     INC  STACK
-    LBR EQUALLOOP
+    JMP EQUALLOOP
 
 SPACE: 
     INC  TARGETREG
-    LBR EQUAL
+    JMP EQUAL
 
 
 WRITEDISPLAY:
@@ -289,7 +289,7 @@ WRITEDISPLAY:
     PHI  TARGETREG
     LOADREGLDN WOZWRITELOW, SCRATCHREG
     PLO  TARGETREG
-    LBR DISPLAY
+    JMP DISPLAY
 
 ; display code here
 SINGLEDISPLAY:
@@ -342,7 +342,7 @@ BYTES:
 EACHCHAR:
     LDN  WOZREG2
     SMI 020h
-    LBNF INVALIDCHAR
+    JNF INVALIDCHAR
     LDN  WOZREG2
     LSKP
 INVALIDCHAR:
@@ -355,7 +355,7 @@ INVALIDCHAR:
     GHI  WOZREG2
     SD 
     INC  STACK
-    LBNZ NOTEQUAL2
+    JNZ NOTEQUAL2
 
     DEC  STACK
     GLO  TARGETREG2
@@ -363,15 +363,15 @@ INVALIDCHAR:
     GLO  WOZREG2
     SD
     INC  STACK
-    LBZ NEWLINE
+    JZ NEWLINE
 
 NOTEQUAL2:
     INC  WOZREG2
     GLO  WOZREG2
     ANI 0Fh
-    LBNZ EACHCHAR
+    JNZ EACHCHAR
 
-    LBR DISPLAY
+    JMP DISPLAY
 
 HELPMENU:
     PRCRLF
@@ -411,7 +411,7 @@ HELPMENU:
     PRSTRINGCRLF "     - User RAM"
     PRCRLF
     PRSTRINGCRLF "Ctrl-\\ Hard boot to 0x0000 | Ctrl-Z Reboot with memory wipe | Ctrl-C warm boot"
-    LBR SKIPTIMERDISPLAY
+    JMP SKIPTIMERDISPLAY
 
 HEXLOADER:
 ; WOZREG is address of current pointer in command line
@@ -430,11 +430,11 @@ HEXLOADER:
     INC  WOZREG
     LDN  WOZREG
     SDI 13 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ DIGIT4
+    JZ DIGIT4
     LDN  WOZREG
     ANI 07h
     ADI 09h
@@ -451,15 +451,15 @@ BOTH4:
     INC  WOZREG
     LDN  WOZREG
     SDI 13 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ DIGIT5
+    JZ DIGIT5
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH5
+    JMP BOTH5
 DIGIT5:
     LDN  WOZREG
     ANI 0Fh
@@ -471,7 +471,7 @@ BOTH5:
     PLO  TARGETREG2
     INC  STACK
     GLO  TARGETREG2
-    LBZ END
+    JZ END
 ; end number of bytes
 
 ; target address
@@ -481,15 +481,15 @@ TARGET:
     INC  WOZREG
     LDN  WOZREG
     SDI 13
-    LBZ END ; unexpected ENTER abort
+    JZ END ; unexpected ENTER abort
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ DIGIT6
+    JZ DIGIT6
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH6
+    JMP BOTH6
 DIGIT6:
     LDN  WOZREG
     ANI 0Fh
@@ -501,7 +501,7 @@ BOTH6:
     biglshift TARGETREG
     DEC  WOZREG2
     GLO  WOZREG2
-    LBNZ TARGET ; not 4 nibbles, loop
+    JNZ TARGET ; not 4 nibbles, loop
 ; done target address
 
     INC  WOZREG ; skip two bytes of 'type'
@@ -512,18 +512,18 @@ EATBYTES:
     INC  WOZREG
     LDN  WOZREG
     SDI 13 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     SDI 10 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ DIGIT7
+    JZ DIGIT7
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH7
+    JMP BOTH7
 DIGIT7:
     LDN  WOZREG
     ANI 0Fh
@@ -536,18 +536,18 @@ BOTH7:
     INC  WOZREG
     LDN  WOZREG
     SDI 13 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     SDI 10 ; enter
-    LBZ END ; unexpected ENTER? abort
+    JZ END ; unexpected ENTER? abort
     LDN  WOZREG
     XRI 030h
     ANI 0F0h
-    LBZ DIGIT8
+    JZ DIGIT8
     LDN  WOZREG
     ANI 07h
     ADI 09h
-    LBR BOTH8
+    JMP BOTH8
 DIGIT8:
     LDN  WOZREG
     ANI 0Fh
@@ -563,7 +563,7 @@ BOTH8:
     DEC  TARGETREG2
     GLO  TARGETREG2
     BNZ EATBYTES
-    LBR END
+    JMP END
 
 RIO:
     PRCRLF
@@ -590,7 +590,7 @@ RIO:
     ANI 0Fh
     PRBYTE
     PRCRLF
-    LBR NEWLINE
+    JMP NEWLINE
 
 
 WIO:
@@ -622,9 +622,9 @@ WIO:
     PRCRLF
 
 END:
-    LBR SKIPTIMERDISPLAY
+    JMP SKIPTIMERDISPLAY
 
 NOTHEX:
     PRCRLF
     PRSTRINGCRLF "ERROR: Invalid Character"
-    LBR END
+    JMP END

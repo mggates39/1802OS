@@ -23,23 +23,23 @@ INTERRUPTHANDLER:
     DEC STACK
     INP 110b ; read byte from UART to stack and D
     ANI 01h ; mask interrupt pending bit
-    LBNZ CHECKRTC
+    JNZ CHECKRTC
     LDN STACK
     ANI 0Eh ; mask interrupt ID
     SMI 02h ; TX
-    LBZ HANDLETX
+    JZ HANDLETX
     LDN STACK
     ANI 0Eh ; mask interrupt ID
     SMI 04h ; RX
-    LBZ HANDLERX
+    JZ HANDLERX
     LDN STACK
     ANI 0Eh ; mask interrupt ID
     SMI 06h ; RLS
-    LBZ HANDLERLS
+    JZ HANDLERLS
 
 HANDLETX:
     LOADREGLDN XOFFPENDING, INTERRUPTREG
-    LBZ SKIPXOFF
+    JZ SKIPXOFF
     SETIO 00h ; UART data port
     SEX INTERRUPTREG
     OUT 100b 
@@ -47,14 +47,14 @@ HANDLETX:
     DEC INTERRUPTREG
     LDI 00H
     STR INTERRUPTREG
-    LBR DONEUART
+    JMP DONEUART
 
 SKIPXOFF:
     LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG ; check byte count in out buffer
     STR STACK
     LOADREGLDN UARTSENDBUFFERTAIL, INTERRUPTREG2 ; check byte count in out buffer
     SM
-    LBZ STOPTRANSMITINTERRUPTS ; skip if buffer is 0 bytes
+    JZ STOPTRANSMITINTERRUPTS ; skip if buffer is 0 bytes
 
 ; tail ptr already in INTERRUPTREG2 from 0 byte check
     LDN INTERRUPTREG2 ; get tail pointer value
@@ -74,7 +74,7 @@ SKIPXOFF:
     LOADREGLDN UARTSENDBUFFERHEAD, INTERRUPTREG
     SM
     INC STACK
-    LBNZ DONEUART ; if not 0, skip disable uart
+    JNZ DONEUART ; if not 0, skip disable uart
 ; char count is zero, stop interrupts
 STOPTRANSMITINTERRUPTS:
     DEC STACK ; don't overwrite interrupt status
@@ -83,7 +83,7 @@ STOPTRANSMITINTERRUPTS:
     ANI 0FDh ; 11111101 to set transmit int to 0
     STR STACK ; push to stack
     OUT 100b    ; OUT grabs from stack, increments back to ISR
-    LBR DONEUART
+    JMP DONEUART
 
 HANDLERX:
     LOADREG UARTRECVBUFFERHEAD, INTERRUPTREG
@@ -95,11 +95,11 @@ HANDLERX:
     DEC STACK
     INP 110b
     SMI 03h ; check if ctrl-c
-    LBZ WARMBOOTJMP
+    JZ WARMBOOTJMP
     SMI 017h ; check if ctrl-Z
-    LBZ REBOOT
+    JZ REBOOT
     SMI 02h ; check if ctrl-backslash
-    LBZ HARDBOOT
+    JZ HARDBOOT
     LDN STACK
     INC STACK
     STR INTERRUPTREG2 ; store byte in head
@@ -111,20 +111,20 @@ HANDLERX:
     STR INTERRUPTREG  ;
 ; INTERRUPTREG is pointer to byte count
     SMI 0C0h
-    LBDF SENDXOFF
+    JDF SENDXOFF
 
 DONEUART:
     INC STACK
-    LBR INTEND
+    JMP INTEND
 
 CHECKRTC: ; comes with STACK decremented
     SETIO 01Eh
     INP 110b
     ANI 010h ; interrupt enabled?
-    LBZ INTEND ; no RTC interrupt
+    JZ INTEND ; no RTC interrupt
     LDN STACK
     ANI 080h ; and overflow flag set
-    LBZ INTEND
+    JZ INTEND
 ; clear interrupt & enable new interrupt
 
 ; refresh time variable in memory every 1hz
@@ -158,7 +158,7 @@ CHECKRTC: ; comes with STACK decremented
     SETIO 01Eh
     WRITEIO 010h
 
-    LBR INTEND
+    JMP INTEND
 
 
 HARDBOOT:
@@ -183,7 +183,7 @@ WARMBOOTJMP:
 
 SENDXOFF:
     LOADREGLDN FLOWCONTROL, INTERRUPTREG
-    LBNZ DONEUART
+    JNZ DONEUART
     LDI 0ffh
     STR INTERRUPTREG
     LOADREG XOFFPENDING, INTERRUPTREG
@@ -196,10 +196,10 @@ SENDXOFF:
     STR STACK ; push new status byte to stack
     OUT 100b ; write 
 
-    LBR DONEUART
+    JMP DONEUART
 
 HANDLERLS:
     SETIO 05h
     INP 110b
-    LBR DONEUART
+    JMP DONEUART
 
