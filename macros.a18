@@ -213,9 +213,9 @@ GOSUB   macro ADDR
 ;preserves D for use in subroutine
     DEC STACK
     STR STACK
-    LDI (CALL) >> 8
+    LDI (CALL >> 8)
     PHI GOSUBREG
-    LDI (CALL) & 0ffh
+    LDI (CALL & 0ffh)
     PLO GOSUBREG
     LDN STACK
     INC STACK
@@ -227,9 +227,9 @@ RETSUB  macro
 ;preserves D for return value from subroutine
     DEC STACK
     STR STACK
-    LDI (RETURN) >> 8
+    LDI (RETURN >> 8)
     PHI GOSUBREG
-    LDI (RETURN) & 0ffh
+    LDI (RETURN & 0ffh)
     PLO GOSUBREG
     LDN STACK
     INC STACK
