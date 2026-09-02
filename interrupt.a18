@@ -120,43 +120,43 @@ DONEUART:
 CHECKRTC: ; comes with STACK decremented
     SETIO 01Eh
     INP 110b
-    ANI 010h ; interrupt enabled?
+    ANI 10h ; interrupt enabled?
     JZ INTEND ; no RTC interrupt
     LDN STACK
-    ANI 080h ; and overflow flag set
+    ANI 80h ; and overflow flag set
     JZ INTEND
 ; clear interrupt & enable new interrupt
 
 ; refresh time variable in memory every 1hz
 
     LOADREG TIMEBASE, INTERRUPTREG
-    SETIO 017h
+    SETIO 17h
     INP 110b
     STR INTERRUPTREG
     INC INTERRUPTREG
-    SETIO 016h
+    SETIO 16h
     INP 110b
     STR INTERRUPTREG
     INC INTERRUPTREG
-    SETIO 015h
+    SETIO 15h
     INP 110b
     STR INTERRUPTREG
     INC INTERRUPTREG
-    SETIO 013h
+    SETIO 13h
     INP 110b
     STR INTERRUPTREG
     INC INTERRUPTREG
-    SETIO 012h
+    SETIO 12h
     INP 110b
     STR INTERRUPTREG
     INC INTERRUPTREG
-    SETIO 011h
+    SETIO 11h
     INP 110b
     STR INTERRUPTREG
 
     INC STACK    
-    SETIO 01Eh
-    WRITEIO 010h
+    SETIO 1Eh
+    WRITEIO 10h
 
     JMP INTEND
 
