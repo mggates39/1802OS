@@ -1,4 +1,4 @@
-BEGINNING equ 4000h
+BEGINNING equ 0000h
     org BEGINNING
 ; for debuggin, 1 to disable delays/memory wipe
 NODELAYS = 0
