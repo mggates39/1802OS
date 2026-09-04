@@ -44,7 +44,7 @@ DEBUGTEXT: db 00h
     align 20h
 ; HEX lookup for PRBYTE
 HEXTABLE: db "0123456789ABCDEF"
-; 64 bytes for the wozmon input line buffer
+; 80 bytes for the wozmon input line buffer
 ; wozmon buffer has no overflow protection
     align 10h
 WOZMONLINE: db 00h
