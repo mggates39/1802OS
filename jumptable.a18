@@ -27,9 +27,9 @@ TIMERSTART_SE: db 00h
 
 
 
-    align 010h ; 16 bytes reserved for OS memory
+    align 10h ; 16 bytes reserved for OS memory
 OSMEM equ $ ; page aligned after ROM code
-XPSAVE:   db   020h        ; encodes X=STACK(2), P=PC(0) — mainline's normal state
+XPSAVE:   db   20h        ; encodes X=STACK(2), P=PC(0) — mainline's normal state
 UARTSENDBUFFERHEAD: db 00h
 UARTSENDBUFFERTAIL: db 00h
 ;UARTSENDOVERFLOWFLAG: db 00h
@@ -41,11 +41,11 @@ WOZWRITEHIGH: db 00h
 FLOWCONTROL: db 00h
 XOFFPENDING: db 00h
 DEBUGTEXT: db 00h
-    align 020h
+    align 20h
 ; HEX lookup for PRBYTE
 HEXTABLE: db "0123456789ABCDEF"
 ; 64 bytes for the wozmon input line buffer
 ; wozmon buffer has no overflow protection
-    align 010h
+    align 10h
 WOZMONLINE: db 00h
 

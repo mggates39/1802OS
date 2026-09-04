@@ -1,6 +1,6 @@
 ; place to define common macros
 
-CLEARREG    macro REG ; REG set to 0000H
+CLEARREG:    macro REG ; REG set to 0000H
     LDI 00h
     PHI REG
     PLO REG

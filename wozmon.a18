@@ -94,7 +94,7 @@ SKIPSENDXON:
     JZ ENDLINE
 
     GLO  WOZREG
-    SDI ((WOZMONLINE >> 8) + 79) ; if over 79 bytes, end input
+    SDI ((WOZMONLINE & 0ffh) + 79) ; if over 79 bytes, end input
     JZ ENDLINE
     JMP INPUTLOOP
 
