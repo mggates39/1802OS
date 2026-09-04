@@ -27,7 +27,7 @@ TIMERSTART_SE: db 00h
 
 
 
-    align 10h ; 16 bytes reserved for OS memory
+    align 10h ; 32 bytes reserved for OS memory
 OSMEM equ $ ; page aligned after ROM code
 XPSAVE:   db   20h        ; encodes X=STACK(2), P=PC(0) — mainline's normal state
 UARTSENDBUFFERHEAD: db 00h
