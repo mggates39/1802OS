@@ -19,15 +19,15 @@ UARTINIT:
     SETIO 01h
     WRITEIO 00h ; high byte
     SETIO 00h
-    WRITEIO 08h ; low byte
+    WRITEIO 18h ; low byte
 
 ; LCR to 00000011, disable DL, 8N1
     SETIO 03h
     WRITEIO 03h
 
-; FCR to 00000111, reset and enable hardware FIFOs
+; FCR to 0000011, reset, disable FIFO
     SETIO 02h
-    WRITEIO 07h
+    WRITEIO 06h
 
 ; MCR to 00000000, no out1/out2
     SETIO 04h
