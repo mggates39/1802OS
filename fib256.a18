@@ -23,7 +23,7 @@
 ;   COPYREG64 macro: copy 8 bytes from src to dst
 ; ============================================================
 
-DATABYTES   EQU 32
+DATABYTES   EQU 1024
 FIBA        EQU USERRAM
 FIBB        EQU FIBA + DATABYTES
 FIBT        EQU FIBB + DATABYTES

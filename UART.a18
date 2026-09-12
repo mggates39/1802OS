@@ -25,7 +25,7 @@ UARTINIT:
     SETIO 03h
     WRITEIO 03h
 
-; FCR to 0000011, reset, disable FIFO
+; FCR to 0000110, reset, disable FIFO
     SETIO 02h
     WRITEIO 06h
 
@@ -77,6 +77,7 @@ PRCHAR_WAIT:
     ENABLE_INTERRUPTS
     RETSUB
 
+; Original Jove written PRBYTE
 PRBYTE_SUB:
     LDI (HEXTABLE >> 8)
     PHI SCRATCHREG
@@ -105,6 +106,35 @@ PRBYTE_SUB:
     DEC STACK
     GOSUB PRCHAR_SUB
     RETSUB
+
+; AI more efficient PRBYTE
+;PRBYTE_SUB:
+;    INC STACK
+;    LDN STACK          ; get byte
+;    SHR
+;    SHR
+;    SHR
+;    SHR                ; high nibble in D
+;    SMI 0Ah
+;    JNF HIGHISDIGIT
+;    ADI 07h
+;HIGHISDIGIT:
+;    ADI 3Ah            ; D = ASCII char
+;    STR STACK
+;    DEC STACK
+;    GOSUB PRCHAR_SUB   ; print high nibble
+;    INC STACK
+;    LDN STACK          ; reload original byte
+;    ANI 0Fh            ; low nibble
+;    SMI 0Ah
+;    JNF LOWISDIGIT
+;    ADI 07h
+;LOWISDIGIT:
+;    ADI 3Ah
+;    STR STACK
+;    DEC STACK
+;    GOSUB PRCHAR_SUB   ; print low nibble
+;    RETSUB
 
 PRSTR:
     LDA ARGUMENTS

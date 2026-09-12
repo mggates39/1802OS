@@ -1,5 +1,5 @@
 THe system has 64K of memory
-32k NVram (ROM and RAN), 32k regular ram
+32k NVram (ROM and RAM), 32k regular ram
 thats it
 this is defined dynamically if the BIOS stuff grows, but currently
 0000-188A     - BIOS/ROM Image
