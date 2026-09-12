@@ -25,7 +25,11 @@ UARTINIT:
     SETIO 03h
     WRITEIO 03h
 
+<<<<<<< HEAD
 ; FCR to 0000110, reset, disable FIFO
+=======
+; FCR to 00000110, reset, disable FIFO
+>>>>>>> 9852e9576727ad91a177bf2ced6cff7d8b2ec520
     SETIO 02h
     WRITEIO 06h
 
